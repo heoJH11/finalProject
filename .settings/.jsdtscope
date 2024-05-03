@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry excluding="src/main/webapp/resources/ckeditor5/ckeditor.js|src/main/webapp/resources/js/bootstrap.bundle.js|src/main/webapp/resources/js/bootstrap.bundle.min.js|src/main/webapp/resources/js/bootstrap.esm.js|src/main/webapp/resources/js/bootstrap.esm.min.js|src/main/webapp/resources/js/bootstrap.js|src/main/webapp/resources/js/bootstrap.min.js|src/main/webapp/resources/js/invenReceiptPayment.js" kind="src" path=""/>
+	<classpathentry kind="con" path="org.eclipse.wst.jsdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="output" path=""/>
+</classpath>

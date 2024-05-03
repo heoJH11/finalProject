@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.board.review_board.mapper.ReviewBoardMapper">
+
+	<sql id="where">
+		<if test="keyword!=null and keyword!=''">
+			AND (
+			<if test="selectColumn == '제목'">
+					AFTUS_BBSCTT_SJ LIKE '%' || #{keyword} || '%'
+			</if>
+			<if test="selectColumn == '작성자'">
+					A.USER_ID
+					IN (SELECT USER_ID FROM USERS WHERE USER_NCNM LIKE '%' || #{keyword} || '%')
+			</if>
+			<if test="selectColumn == '' || selectColumn == null">
+					A.USER_ID=#{keyword}
+			</if>
+			)
+		</if>
+	</sql>
+	
+	<select id="list" parameterType="hashMap" resultType="aftusBbscttVO">
+		SELECT T.* FROM
+		(
+		SELECT 
+			ROW_NUMBER() OVER(ORDER BY AFTUS_BBSCTT_WR_DT ASC) RNUM
+			, A.AFTUS_BBSCTT_NO
+			, A.AFTUS_BBSCTT_SJ
+			, TO_CHAR(A.AFTUS_BBSCTT_WR_DT, 'YYYY.MM.DD') AS AFTUS_BBSCTT_WR_DT
+			, A.AFTUS_BBSCTT_RDCNT
+			, B.USER_NCNM
+			, C.MBER_PROFL_PHOTO
+		FROM AFTUS_BBSCTT A
+		INNER JOIN USERS B 
+			ON A.USER_ID = B.USER_ID
+		LEFT JOIN MBER C 
+			ON A.USER_ID = C.MBER_ID
+		WHERE 1 = 1
+		<if test = "userId != null and userId!=''">
+					AND A.USER_ID=#{userId}
+		</if>
+		<include refid="where"></include>
+		) T
+		WHERE T.RNUM 
+			BETWEEN (#{total} - (10 * (#{currentPage} - 1)) - 9) 
+			AND 	(#{total} - (10 * (#{currentPage} - 1)))
+		ORDER BY RNUM DESC
+	</select>
+	
+	<select id="getTotal" resultType="int">
+		SELECT COUNT(*) 
+		FROM AFTUS_BBSCTT A
+    	WHERE 1 = 1
+    	<if test = "userId != null and userId!=''">
+			AND A.USER_ID = #{userId}
+		</if>
+    	<include refid="where"></include>
+	</select>
+	
+	<update id="updateCnt" parameterType="int">
+		UPDATE AFTUS_BBSCTT 
+		SET AFTUS_BBSCTT_RDCNT = AFTUS_BBSCTT_RDCNT + 1
+		WHERE AFTUS_BBSCTT_NO = #{aftusBbscttNo}
+	</update>
+	
+	<select id="listModal" parameterType="String" resultType="SrvcRequstVO">
+		SELECT DISTINCT 
+			A.SRVC_REQUST_NO
+			, A.SRVC_REQUST_SJ
+			, A.SRVC_REQUST_WR_DT
+			, A.SRVC_REQUST_COMPT_DT 
+		FROM SRVC_REQUST A
+		WHERE A.SRVC_REQUST_PROCESS_MBER = 1 
+			AND A.SRVC_REQUST_PROCESS_PRO = 1 
+			AND A.MBER_ID = #{userId} AND
+		NOT EXISTS(
+			SELECT B.SRVC_REQUST_NO 
+			FROM AFTUS_BBSCTT B 
+			WHERE A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		)
+		ORDER BY A.SRVC_REQUST_WR_DT DESC
+	</select>
+	
+	<select id="listMyReview" parameterType="String" resultType="AftusBbscttVO">
+		SELECT T.* FROM
+		(
+		SELECT ROW_NUMBER() OVER(ORDER BY AFTUS_BBSCTT_NO DESC) RNUM
+			, A.AFTUS_BBSCTT_NO
+			, A.AFTUS_BBSCTT_SJ
+			, A.AFTUS_BBSCTT_WR_DT
+			, A.AFTUS_BBSCTT_RDCNT
+			, B.USER_NCNM
+		FROM AFTUS_BBSCTT A, USERS B
+		WHERE A.USER_ID=B.USER_ID AND A.USER_ID = #{userId}
+		)
+		T
+		WHERE  T.RNUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+	</select>	
+	
+	<select id="detail" parameterType="int" resultType="aftusBbscttVO">
+		SELECT
+			A.AFTUS_BBSCTT_NO
+			, A.AFTUS_BBSCTT_SJ
+			, A.AFTUS_BBSCTT_CN
+			, TO_CHAR(A.AFTUS_BBSCTT_WR_DT, 'YYYY.MM.DD HH24:MI') AS AFTUS_BBSCTT_WR_DT
+			, A.AFTUS_BBSCTT_RDCNT, A.SPRVISE_ATCHMNFL_NO
+			, A.SRVC_REQUST_NO, A.USER_ID, B.USER_NCNM
+			, C.PRO_ID
+		FROM AFTUS_BBSCTT A, USERS B, SRVC_REQUST C
+		WHERE B.USER_ID = A.USER_ID 
+			AND A.AFTUS_BBSCTT_NO = #{aftusBbscttNo} 
+			AND A.SRVC_REQUST_NO = C.SRVC_REQUST_NO
+	</select>
+	
+	<insert id="createAjax" parameterType="aftusBbscttVO">
+    	<selectKey keyProperty="aftusBbscttNo" resultType="int" order="BEFORE">
+        	SELECT AFTUS_BBSCTT_NO_seq.nextval FROM DUAL
+    	</selectKey>
+    	INSERT INTO AFTUS_BBSCTT 
+    		(
+    		AFTUS_BBSCTT_NO
+    		, AFTUS_BBSCTT_SJ
+    		, AFTUS_BBSCTT_CN
+    		, AFTUS_BBSCTT_WR_DT
+    		, AFTUS_BBSCTT_RDCNT
+    		, SRVC_REQUST_NO
+    		, USER_ID
+    		<if test="sprviseAtchmnflNo == 0">
+    			, SPRVISE_ATCHMNFL_NO
+    		</if>
+    		)
+    	VALUES 
+    		(
+    		#{aftusBbscttNo}
+    		, #{aftusBbscttSj}
+    		, #{aftusBbscttCn}
+    		, SYSDATE
+    		, #{aftusBbscttRdcnt}
+    		, #{srvcRequstNo}
+    		, #{userId}
+    		<if test="sprviseAtchmnflNo == 0">
+    			, SPRVISE_ATCHMNFL_NO_seq.nextval
+    		</if> 
+    		)
+	</insert>
+	
+	<delete id="delete" parameterType="int">
+		DELETE FROM AFTUS_BBSCTT
+		WHERE AFTUS_BBSCTT_NO = #{aftusBbscttNo}
+	</delete>
+	
+	<update id="update" parameterType="aftusBbscttVO">
+		UPDATE AFTUS_BBSCTT 
+		SET AFTUS_BBSCTT_SJ = #{aftusBbscttSj}
+		<if test="aftusBbscttCn != '' and aftusBbscttCn != null">
+			, AFTUS_BBSCTT_CN=#{aftusBbscttCn}
+		</if>
+		<if test="sprviseAtchmnflNo == 0">
+			, SPRVISE_ATCHMNFL_NO = SPRVISE_ATCHMNFL_NO_seq.nextval
+		</if>
+		WHERE AFTUS_BBSCTT_NO = #{aftusBbscttNo}
+	</update>
+	
+	<!-- 파일업로드 -->
+	<insert id="insertFile" parameterType="sprviseAtchmnflVO">
+		INSERT INTO SPRVISE_ATCHMNFL
+			(
+			SPRVISE_ATCHMNFL_NO
+			, ATCHMNFL_NO
+			, ATCHMNFL_COURS
+			, ATCHMNFL_NM, STORE_ATCHMNFL_NM
+			, ATCHMNFL_TY
+			, REGIST_DT
+			, USER_ID
+			)
+		VALUES 
+			(
+			SPRVISE_ATCHMNFL_NO_seq.currval
+			, #{atchmnflNo}
+			, #{atchmnflCours}
+			, #{atchmnflNm}
+			, #{storeAtchmnflNm}
+			, #{atchmnflTy}
+			, SYSDATE
+			, #{userId}
+			)
+	</insert>
+	
+	<insert id="updateFile" parameterType="sprviseAtchmnflVO">
+		<selectKey keyProperty="atchmnflNo" resultType="int" order="BEFORE"> 
+    		SELECT 
+    			NVL(MAX(ATCHMNFL_NO), 0) + 1 
+    		FROM SPRVISE_ATCHMNFL
+			WHERE SPRVISE_ATCHMNFL_NO = #{sprviseAtchmnflNo}
+    	</selectKey>
+		INSERT INTO SPRVISE_ATCHMNFL
+			(
+			SPRVISE_ATCHMNFL_NO
+			, ATCHMNFL_NO
+			, ATCHMNFL_COURS
+			, ATCHMNFL_NM
+			, STORE_ATCHMNFL_NM
+			, ATCHMNFL_TY
+			, REGIST_DT
+			, USER_ID
+			)
+		VALUES 
+			(
+			#{sprviseAtchmnflNo}
+			, #{atchmnflNo}
+			, #{atchmnflCours}
+			, #{atchmnflNm}
+			, #{storeAtchmnflNm}
+			, #{atchmnflTy}
+			, SYSDATE
+			, #{userId}
+			)
+	</insert>
+	
+	<select id="fileList" parameterType="int" resultType="sprviseAtchmnflVO">
+		SELECT 
+			SPRVISE_ATCHMNFL_NO
+			, ATCHMNFL_NO
+			, ATCHMNFL_COURS
+			, ATCHMNFL_NM
+		FROM SPRVISE_ATCHMNFL
+		WHERE SPRVISE_ATCHMNFL_NO = #{sprviseAtchmnflNo}
+	</select>
+	
+	<delete id="fileDel" parameterType="sprviseAtchmnflVO">
+		DELETE FROM SPRVISE_ATCHMNFL
+		WHERE SPRVISE_ATCHMNFL_NO = #{sprviseAtchmnflNo} 
+			AND ATCHMNFL_NO = #{atchmnflNo}
+	</delete>
+	
+	<!-- 댓글 -->
+	<select id="aftusBbscttAnswerList" parameterType="int" resultType="aftusBbscttAnswerVO">
+    	SELECT 
+    		A.AFTUS_BBSCTT_ANSWER_NO, A.AFTUS_BBSCTT_NO
+    		, A.AFTUS_BBSCTT_ANSWER_CN
+    		, TO_CHAR(A.AFTUS_BBSCTT_ANSWER_WR_DT, 'YYYY-MM-DD HH24:MI') AS AFTUS_BBSCTT_ANSWER_WR_DT
+    		, A.PT_AFTUS_BBSCTT_ANSWER_NO
+    		, A.PT_AFTUS_BBSCTT_NO, A.USER_ID, B.USER_NCNM
+    		, C.PRO_PROFL_PHOTO, D.MBER_PROFL_PHOTO
+		FROM AFTUS_BBSCTT_ANSWER A
+		INNER JOIN USERS B ON A.USER_ID = B.USER_ID
+		LEFT JOIN PRO C ON A.USER_ID = C.PRO_ID
+        LEFT JOIN MBER D ON A.USER_ID = D.MBER_ID
+		WHERE A.AFTUS_BBSCTT_NO = #{aftusBbscttNo}
+			AND A.PT_AFTUS_BBSCTT_NO IS NULL
+			AND A.PT_AFTUS_BBSCTT_ANSWER_NO IS NULL
+		ORDER BY A.AFTUS_BBSCTT_ANSWER_NO DESC
+    </select>
+    
+    <insert id="aftusBbscttAnswerInsert" parameterType="aftusBbscttAnswerVO">
+    	INSERT INTO AFTUS_BBSCTT_ANSWER
+    		(
+    		AFTUS_BBSCTT_ANSWER_NO
+    		, AFTUS_BBSCTT_NO
+    		, AFTUS_BBSCTT_ANSWER_CN
+    		, AFTUS_BBSCTT_ANSWER_WR_DT
+    		, USER_ID
+			)
+		VALUES
+			(
+    		AFTUS_BBSCTT_ANSWER_NO_SEQ.NEXTVAL
+    		, #{aftusBbscttNo}
+    		, #{aftusBbscttAnswerCn}
+    		, SYSDATE
+    		, #{userId}
+			)
+    </insert>
+    
+    <delete id="aftusBbscttAnswerDelete" parameterType="int">
+    	DELETE FROM AFTUS_BBSCTT_ANSWER
+    	WHERE 1 = 1 
+    		AND AFTUS_BBSCTT_ANSWER_NO = #{aftusBbscttAnswerNo}
+    </delete>
+    
+    <update id="aftusBbscttAnswerUpdate" parameterType="aftusBbscttAnswerVO">
+    	UPDATE AFTUS_BBSCTT_ANSWER
+		SET
+    		AFTUS_BBSCTT_ANSWER_CN = #{aftusBbscttAnswerCn},
+    		AFTUS_BBSCTT_ANSWER_WR_DT = SYSDATE
+		WHERE
+    		AFTUS_BBSCTT_ANSWER_NO = #{aftusBbscttAnswerNo}
+    </update>
+    
+    <select id="ansAnsList" parameterType="int" resultType="aftusBbscttAnswerVO">
+		SELECT 
+			A.AFTUS_BBSCTT_ANSWER_NO
+			, A.AFTUS_BBSCTT_NO
+			, A.AFTUS_BBSCTT_ANSWER_CN
+    		, TO_CHAR(A.AFTUS_BBSCTT_ANSWER_WR_DT, 'YYYY-MM-DD HH24:MI') AS AFTUS_BBSCTT_ANSWER_WR_DT
+            , A.PT_AFTUS_BBSCTT_ANSWER_NO
+    		, A.PT_AFTUS_BBSCTT_NO
+    		, A.USER_ID
+    		, B.USER_NCNM
+            , C.PRO_PROFL_PHOTO
+            , D.MBER_PROFL_PHOTO
+		FROM AFTUS_BBSCTT_ANSWER A
+		INNER JOIN USERS B ON A.USER_ID = B.USER_ID
+        LEFT JOIN PRO C ON A.USER_ID = C.PRO_ID
+        LEFT JOIN MBER D ON A.USER_ID = D.MBER_ID
+		WHERE PT_AFTUS_BBSCTT_ANSWER_NO = #{ptAftusBbscttAnswerNo}
+		ORDER BY A.AFTUS_BBSCTT_ANSWER_NO ASC
+    </select>
+      
+    <insert id="ansAnsInt" parameterType="aftusBbscttAnswerVO">
+    	INSERT INTO AFTUS_BBSCTT_ANSWER 
+    		(
+		    AFTUS_BBSCTT_ANSWER_NO
+		    , AFTUS_BBSCTT_NO
+		    , AFTUS_BBSCTT_ANSWER_CN
+		    , AFTUS_BBSCTT_ANSWER_WR_DT
+		    , PT_AFTUS_BBSCTT_ANSWER_NO
+		    , USER_ID
+		    , PT_AFTUS_BBSCTT_NO
+			) 
+		VALUES 
+			(
+		    AFTUS_BBSCTT_ANSWER_NO_SEQ.NEXTVAL
+		    , #{aftusBbscttNo}
+		    , #{aftusBbscttAnswerCn}
+		    , SYSDATE
+		    , #{ptAftusBbscttAnswerNo}
+		    , #{userId}
+		    , #{ptAftusBbscttNo}
+			)
+    </insert>
+    
+    <select id="ansAnsCnt" parameterType="int" resultType="int">
+    	SELECT COUNT(*)
+		FROM AFTUS_BBSCTT_ANSWER
+		WHERE PT_AFTUS_BBSCTT_ANSWER_NO = #{ptAftusBbscttAnswerNo}
+    </select>
+	
+	
+</mapper>

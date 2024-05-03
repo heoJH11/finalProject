@@ -1,0 +1,636 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.onedayclass.mapper.OnedayClassMapper">
+	<sql id="where">
+		<if test="keyword!=null and keyword!=''">
+			<choose>
+				<when test="searchKeyword == 'date'">
+					AND ONDYCL_SCHDUL_DE = TO_DATE(#{keyword},'YYYYMMDD')
+				</when> 
+				<otherwise>
+					AND ONDYCL_NM LIKE '%' || #{keyword} || '%'
+				</otherwise>
+			</choose>
+		</if>
+		<if test="bool">
+			AND REPLACE(ONDYCL_SCHDUL_DE,'.','') &lt; TO_NUMBER(TO_CHAR(SYSDATE,'YYYYMMDD')) 
+		</if>
+	</sql>
+	
+	<resultMap type="ondyclVO" id="ondyclVOMap">
+		<result property="ondyclNo" column="ONDYCL_NO"/>
+		<result property="ondyclNm" column="ONDYCL_NM"/>
+		<result property="ondyclCn" column="ONDYCL_CN"/>
+		<result property="ondyclRegistDt" column="ONDYCL_REGIST_DT"/>
+		<result property="ondyclPc" column="ONDYCL_PC"/>
+		<result property="ondyclPsncpa" column="ONDYCL_PSNCPA"/>
+		<result property="ondyclDelDt" column="ONDYCL_DEL_DT"/>
+		<result property="ondyclThumbPhoto" column="ONDYCL_THUMB_PHOTO"/>
+		<result property="proId" column="PRO_ID"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="ondyclResvpa" column="ONDYCL_RESVPA"/>
+		<result property="ondyclAdres" column="ONDYCL_ADRES"/>
+		<result property="ondyclDetailAdres" column="ONDYCL_DETAIL_ADRES"/>
+	</resultMap>
+	
+	<resultMap type="bundleOndyclVO" id="bundleOndyclVOMap">
+		<result property="ondyclNo" column="ONDYCL_NO"/>
+		<result property="ondyclNm" column="ONDYCL_NM"/>
+		<result property="ondyclCn" column="ONDYCL_CN" jdbcType="CLOB" javaType="java.lang.String"></result>
+		<result property="ondyclRegistDt" column="ONDYCL_REGIST_DT"/>
+		<result property="ondyclPc" column="ONDYCL_PC"/>
+		<result property="ondyclPsncpa" column="ONDYCL_PSNCPA"/>
+		<result property="ondyclDelType" column="ONDYCL_DEL_TYPE"/>
+		<result property="ondyclDelDt" column="ONDYCL_DEL_DT"/>
+		<result property="ondyclThumbPhoto" column="ONDYCL_THUMB_PHOTO"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="proId" column="PRO_ID"/>
+		<result property="ondyclAdres" column="ONDYCL_ADRES"/>
+		<result property="ondyclDetailAdres" column="ONDYCL_DETAIL_ADRES"/>
+		<result property="ondyclZip" column="ONDYCL_ZIP"/>
+		<result property="ondyclSchdulNo" column="ONDYCL_SCHDUL_NO"/>
+		<result property="ondyclSchdulDe" column="ONDYCL_SCHDUL_DE"/>
+		<result property="ondyclSchdulBeginTime" column="ONDYCL_SCHDUL_BEGIN_TIME"/>
+		<result property="ondyclSchdulEndTime" column="ONDYCL_SCHDUL_END_TIME"/>
+		<result property="shopngBundleNo" column="SHOPNG_BUNDLE_NO"/>
+		<result property="mberId" column="MBER_ID"/>
+		<result property="prdTotqy" column="PRD_TOTQY"/>
+		<result property="prdPc" column="PRD_PC"/>
+	</resultMap>
+	
+	<resultMap type="vOndyclProUsersVO" id="vOndyclProUsersMap">
+		<result property="proId" column="PRO_ID"/>
+		<result property="proMbtlnum" column="PRO_MBTLNUM"/>
+		<result property="sexdstnTy" column="SEXDSTN_TY"/>
+		<result property="email" column="EMAIL"/>
+		<result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+		<result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+		<result property="ondyclNo" column="ONDYCL_NO"/>
+		<result property="ondyclNm" column="ONDYCL_NM"/>
+		<result property="ondyclCn" column="ONDYCL_CN" jdbcType="CLOB" javaType="java.lang.String"></result>
+		<result property="ondyclRegistDt" column="ONDYCL_REGIST_DT"/>
+		<result property="ondyclPc" column="ONDYCL_PC"/>
+		<result property="ondyclPsncpa" column="ONDYCL_PSNCPA"/>
+		<result property="ondyclDelType" column="ONDYCL_DEL_TYPE"/>
+		<result property="ondyclDelDt" column="ONDYCL_DEL_DT"/>
+		<result property="ondyclThumbPhoto" column="ONDYCL_THUMB_PHOTO"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="ondyclSchdulNo" column="ONDYCL_SCHDUL_NO"/>
+		<result property="ondyclSchdulDe" column="ONDYCL_SCHDUL_DE"/>
+		<result property="ondyclSchdulBeginTime" column="ONDYCL_SCHDUL_BEGIN_TIME"/>
+		<result property="ondyclSchdulEndTime" column="ONDYCL_SCHDUL_END_TIME"/>
+		<result property="adresNo" column="ADRES_NO"/>
+		<result property="adres" column="ADRES"/>
+		<result property="detailAdres" column="DETAIL_ADRES"/>
+		<result property="zip" column="ZIP"/>
+		<result property="spcltyRealmNm" column="SPCLTY_REALM_NM"/>
+		<result property="ondyclResvpa" column="ONDYCL_RESVPA"/>
+		<result property="ptprtSpcltyRealmCode" column="PTPRT_SPCLTY_REALM_CODE"/>
+		<result property="ondyclAdres" column="ONDYCL_ADRES"/>
+		<result property="ondyclDetailAdres" column="ONDYCL_DETAIL_ADRES"/>
+		<result property="ondyclZip" column="ONDYCL_ZIP"/>
+	</resultMap>
+	
+	<resultMap type="reviewMberVO" id="reviewMberVOMap">
+		<result property="ondyclReNo" column="ONDYCL_RE_NO"/>
+		<result property="ondyclReCn" column="ONDYCL_RE_CN"/>
+		<result property="ondyclReWrDt" column="ONDYCL_RE_WR_DT"/>
+		<result property="mberNcnm" column="MBER_NCNM"/>
+		<result property="mberId" column="MBER_ID"/>
+		<result property="ondyclNo" column="ONDYCL_NO"/>
+		<result property="ondyclReScore" column="ONDYCL_RE_SCORE"/>
+		<result property="mberMbtlnum" column="MBER_MBTLNUM"/>
+		<result property="sexdstnTy" column="SEXDSTN_TY"/>
+		<result property="email" column="EMAIL"/>
+		<result property="mberProflPhoto" column="MBER_PROFL_PHOTO"/>
+	</resultMap>
+	
+	<!-- 메인화면 원데이클래스 랭킹  -->
+	<select id="getOndyclRank" resultMap="ondyclVOMap">
+		SELECT * FROM (
+		    SELECT ONDYCL_NO, ONDYCL_NM, ONDYCL_THUMB_PHOTO, ONDYCL_RESVPA FROM ONDYCL
+		    WHERE ONDYCL_DEL_TYPE != 1
+		    ORDER BY ONDYCL_RESVPA DESC
+		) WHERE ROWNUM &lt; 4
+	</select>
+	
+	<!-- 프로 내 원데이클래스 리스트 출력 -->
+	<select id="proMyClassList" parameterType="hashMap" resultMap="vOndyclProUsersMap">
+		WITH T AS(
+			SELECT ROW_NUMBER() OVER(ORDER BY ONDYCL_SCHDUL_DE DESC) RNUM
+				, PRO_ID, PRO_MBTLNUM, SEXDSTN_TY, EMAIL, PRO_PROFL_PHOTO, SPCLTY_REALM_CODE
+			    , ONDYCL_NO, ONDYCL_NM, ONDYCL_CN, ONDYCL_REGIST_DT, ONDYCL_PC, ONDYCL_RESVPA
+			    , ONDYCL_PSNCPA, ONDYCL_DEL_TYPE, ONDYCL_DEL_DT, ONDYCL_THUMB_PHOTO
+			    , SPRVISE_ATCHMNFL_NO, ONDYCL_ADRES, ONDYCL_DETAIL_ADRES, ONDYCL_ZIP
+			    , USER_NM, EMPLYR_TY, SECSN_AT, USER_NCNM, ONDYCL_SCHDUL_NO
+			    , TO_CHAR(TO_DATE(ONDYCL_SCHDUL_DE,'YYYY-MM-DD'),'YYYY.MM.DD') AS ONDYCL_SCHDUL_DE
+			    , ONDYCL_SCHDUL_BEGIN_TIME, ONDYCL_SCHDUL_END_TIME, ADRES_NO, ADRES, DETAIL_ADRES
+			    , ZIP, SPCLTY_REALM_NM, PTPRT_SPCLTY_REALM_CODE
+			FROM V_ONDYCL_PRO_USERS
+			WHERE PRO_ID = #{proId}
+			<include refid="where"></include>
+		)
+		SELECT T.* FROM T
+		WHERE T.RNUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+		ORDER BY ONDYCL_SCHDUL_DE DESC
+	</select>
+	<select id="countProMyClass" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) FROM V_ONDYCL_PRO_USERS
+		WHERE PRO_ID = #{proId}
+		<include refid="where"></include>
+	</select>
+	<!-- 프로 총 매출액 -->
+	<select id="getTotalPrice" parameterType="hashMap" resultType="int">
+		SELECT NVL(SUM(RD.RESVE_TPPRICE),0)
+		FROM RESVE_DETAIL RD
+		WHERE RD.RESVE_NO IN (SELECT RD.RESVE_NO
+		                FROM RESVE_DETAIL RD
+		                WHERE RD.ONDYCL_NO IN (
+		                    SELECT O.ONDYCL_NO
+		                    FROM ONDYCL O
+		                    WHERE O.PRO_ID = #{proId}
+		                )
+		                AND NOT EXISTS (
+		                    SELECT 1
+		                    FROM SETLE S
+		                    WHERE S.RESVE_NO = RD.RESVE_NO
+		                    AND S.CANCL_AT = 1
+		                ))
+	</select>
+	<!-- 프로 별점 통계 -->
+	<select id="getTotalStar" parameterType="hashMap" resultType="double">
+		SELECT NVL(ROUND(AVG(P.ONDYCL_RE_SCORE),2),0)
+		FROM ONDYCL_REVIEW P
+		WHERE P.ONDYCL_NO IN (SELECT O.ONDYCL_NO
+		                FROM ONDYCL O
+		                WHERE O.PRO_ID = #{proId})
+	</select>
+	<!-- 프로 총 리뷰 갯수 -->
+	<select id="getTotalUser" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*)
+		FROM RESVE_DETAIL RD
+		WHERE RD.RESVE_NO IN (SELECT RD.RESVE_NO
+		                FROM RESVE_DETAIL RD
+		                WHERE RD.ONDYCL_NO IN (
+		                    SELECT O.ONDYCL_NO
+		                    FROM ONDYCL O
+		                    WHERE O.PRO_ID = #{proId}
+		                )
+		                AND NOT EXISTS (
+		                    SELECT 1
+		                    FROM SETLE S
+		                    WHERE S.RESVE_NO = RD.RESVE_NO
+		                    AND S.CANCL_AT = 1
+		                ))
+	</select>
+	<!-- 프로 월별 클래스 이용자 -->
+	<select id="getMonthTotalUser" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*)
+		FROM RESVE_DETAIL RD
+		JOIN ONDYCL O ON RD.ONDYCL_NO = O.ONDYCL_NO
+		LEFT JOIN SETLE S ON RD.RESVE_NO = S.RESVE_NO
+		JOIN ONDYCL_SCHDUL OS ON O.ONDYCL_NO = OS.ONDYCL_NO
+		WHERE O.PRO_ID = #{proId}
+		AND S.CANCL_AT != 1
+		AND TO_NUMBER(TO_CHAR(TO_DATE(OS.ONDYCL_SCHDUL_DE, 'YYYY-MM-DD'), 'YYYYMMDD'))
+		BETWEEN #{startMonth} AND #{startMonth} + 30
+	</select>
+	<!-- 프로 월별 클래스 수입금 -->
+	<select id="getMonthTotalPrice" parameterType="hashMap" resultType="int">
+		SELECT NVL(SUM(RD.RESVE_TPPRICE),0)
+		FROM RESVE_DETAIL RD
+		JOIN ONDYCL O ON RD.ONDYCL_NO = O.ONDYCL_NO
+		LEFT JOIN SETLE S ON RD.RESVE_NO = S.RESVE_NO
+		JOIN ONDYCL_SCHDUL OS ON O.ONDYCL_NO = OS.ONDYCL_NO
+		WHERE O.PRO_ID = #{proId}
+		AND S.CANCL_AT != 1
+		AND TO_NUMBER(TO_CHAR(TO_DATE(OS.ONDYCL_SCHDUL_DE, 'YYYY-MM-DD'), 'YYYYMMDD'))
+		    BETWEEN #{startMonth} AND #{startMonth} + 30
+	</select>
+	
+	<!-- 원데이클래스 리뷰 목록 출력 -->
+	<select id="reviewList" parameterType="int" resultMap="reviewMberVOMap">
+		SELECT A.ONDYCL_RE_NO, A.ONDYCL_RE_CN, TO_CHAR(TO_DATE(A.ONDYCL_RE_WR_DT,'YYYY-MM-DD'),'YYYY.MM.DD') AS ONDYCL_RE_WR_DT
+			, A.MBER_NCNM, A.MBER_ID
+		    , A.ONDYCL_NO, A.ONDYCL_RE_SCORE
+		    , B.MBER_MBTLNUM, B.SEXDSTN_TY, B.EMAIL, B.MBER_PROFL_PHOTO
+		FROM ONDYCL_REVIEW A, MBER B
+		WHERE A.ONDYCL_NO = #{ondyclNo}
+		AND A.MBER_ID = B.MBER_ID
+	</select>
+	<!-- 원데이클래스 프로 닉네임 구하기 -->
+	<select id="getUserNcnm" parameterType="String" resultType="String">
+		SELECT USER_NCNM FROM USERS WHERE USER_ID = #{userId}
+	</select>
+	
+	<!-- 원데이클래스 구매여부 확인 -->
+	<select id="classBundleCk" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) FROM SHOPNG_BUNDLE
+		WHERE MBER_ID = #{mberId}
+		AND ONDYCL_NO = #{ondyclNo}
+	</select>
+	
+	<!-- 원데이클래스 가격 확인 -->
+	<select id="priceCk" parameterType="int" resultType="vOndyclSchdulVO">
+		SELECT ONDYCL_PC, ONDYCL_SCHDUL_DE, ONDYCL_SCHDUL_NO FROM V_ONDYCL_SCHDUL WHERE ONDYCL_NO = #{ondyclNO}
+	</select>
+	
+	<!-- 장바구니 클래스 삭제 -->
+	<delete id="delBundle" parameterType="hashMap">
+		DELETE FROM SHOPNG_BUNDLE
+		WHERE ONDYCL_NO = #{ondyclNo}
+		AND MBER_ID = #{mberId}
+	</delete>
+	
+	<!-- 회원 원데이클래스 취소 -->
+	<update id="mberClassCancel" parameterType="hashMap">
+		UPDATE SETLE
+		SET CANCL_AT = 1, CANCL_DT = SYSDATE
+		WHERE RESVE_NO IN (SELECT RESVE_NO
+		                    FROM RESVE
+		                    WHERE MBER_ID = #{mberId}
+		                    AND RESVE_NO = (SELECT RESVE_NO
+		                                        FROM RESVE_DETAIL
+		                                        WHERE ONDYCL_NO = #{ondyclNo}))
+	</update>
+	
+	<!-- 회원 원데이클래스 리뷰달때 원데이클래스 제목 -->
+	<select id="mberReviewTitle" parameterType="int" resultType="String">
+		SELECT ONDYCL_NM FROM ONDYCL WHERE ONDYCL_NO = #{ondyclNo}
+	</select>
+	
+	<!-- 회원 리뷰 작성 -->
+	<insert id="createReview" parameterType="ondyclReviewVO">
+		<selectKey resultType="String" keyProperty="mberNcnm" order="BEFORE">
+			SELECT USER_NCNM FROM USERS WHERE USER_ID = #{mberId}
+		</selectKey>
+		INSERT INTO ONDYCL_REVIEW(ONDYCL_RE_NO, ONDYCL_RE_CN, ONDYCL_RE_WR_DT, MBER_NCNM, MBER_ID, ONDYCL_NO, ONDYCL_RE_SCORE)
+		VALUES(ONDYCL_RE_NO_SEQ.NEXTVAL, #{ondyclReCn}, SYSDATE, #{mberNcnm}, #{mberId}, #{ondyclNo}, #{ondyclReScore})
+	</insert>
+	
+	<!-- 장바구니 리스트 출력 -->
+	<select id="mberShoppingCart" parameterType="hashMap" resultMap="bundleOndyclVOMap">
+		WITH T AS(
+			SELECT ROW_NUMBER() OVER(ORDER BY A.SHOPNG_BUNDLE_NO ASC) AS RNUM
+				, A.SHOPNG_BUNDLE_NO, A.MBER_ID, A.ONDYCL_SCHDUL_NO, A.ONDYCL_NO
+			    , A.PRD_TOTQY, PRD_PC, A.RESVE_TY
+			    , B.ONDYCL_NM, B.ONDYCL_CN, B.ONDYCL_REGIST_DT, B.ONDYCL_PC, B.ONDYCL_PSNCPA
+			    , B.ONDYCL_DEL_TYPE, B.ONDYCL_DEL_DT, B.ONDYCL_THUMB_PHOTO, B.PRO_ID
+			    , B.SPRVISE_ATCHMNFL_NO, B.ONDYCL_RESVPA, B.ONDYCL_ADRES
+			    , B.ONDYCL_DETAIL_ADRES, B.ONDYCL_ZIP
+			    , TO_CHAR(TO_DATE(C.ONDYCL_SCHDUL_DE, 'YYYY-MM-DD'), 'YYYY.MM.DD') AS ONDYCL_SCHDUL_DE, C.ONDYCL_SCHDUL_BEGIN_TIME, C.ONDYCL_SCHDUL_END_TIME
+			FROM SHOPNG_BUNDLE A INNER JOIN ONDYCL B ON A.ONDYCL_NO = B.ONDYCL_NO
+			INNER JOIN ONDYCL_SCHDUL C ON A.ONDYCL_SCHDUL_NO = C.ONDYCL_SCHDUL_NO
+			WHERE MBER_ID = #{mberId}
+			AND RESVE_TY != 1
+			<include refid="where"></include>
+		)
+		SELECT T.* FROM T
+		WHERE T.RNUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+		ORDER BY T.ONDYCL_SCHDUL_DE DESC
+	</select>
+	
+	<!-- 원데이클래스 정원 초과 확인 -->
+	<select id="getPeopleCheck" parameterType="int" resultType="String">
+		SELECT
+		CASE
+		    WHEN (SELECT ONDYCL_PSNCPA-ONDYCL_RESVPA FROM ONDYCL WHERE ONDYCL_NO = #{ondyclNo}) = 0 THEN 'TRUE'
+		    ELSE 'FALSE'
+		END AS RESULT
+		FROM DUAL
+	</select>
+	
+	<!-- 장바구니 갯수 검색 -->
+	<select id="countShoppingCart" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) FROM SHOPNG_BUNDLE
+		WHERE MBER_ID = #{mberId}
+		AND RESVE_TY != 1
+	</select>
+	
+	<!-- 회원 원데이클래스 장바구니 담기 -->
+	<insert id="putShoppingCart" parameterType="shopngBundleVO">
+		INSERT INTO SHOPNG_BUNDLE(SHOPNG_BUNDLE_NO, MBER_ID, ONDYCL_SCHDUL_NO, ONDYCL_NO, PRD_TOTQY, PRD_PC)
+		VALUES(SHOPNG_BUNDLE_NO_SEQ.NEXTVAL, #{mberId}, #{ondyclSchdulNo}, #{ondyclNo}, 1, #{prdPc})
+	</insert>
+	
+	<!-- 멤버 내 원데이클래스 리스트 출력 -->
+	<select id="memberOndyclList" parameterType="hashMap" resultMap="vOndyclProUsersMap">
+		WITH T AS(
+			SELECT 
+			    ROW_NUMBER() OVER(ORDER BY A.ONDYCL_SCHDUL_DE DESC) AS RNUM,
+			    B.CANCL_AT,
+			    A.PRO_ID, A.PRO_MBTLNUM, A.SEXDSTN_TY, A.EMAIL, A.PRO_PROFL_PHOTO, A.SPCLTY_REALM_CODE,
+			    A.ONDYCL_NO, A.ONDYCL_NM, A.ONDYCL_CN, A.ONDYCL_REGIST_DT, A.ONDYCL_PC, A.ONDYCL_RESVPA,
+			    A.ONDYCL_PSNCPA, A.ONDYCL_DEL_TYPE, A.ONDYCL_DEL_DT, A.ONDYCL_THUMB_PHOTO,
+			    A.SPRVISE_ATCHMNFL_NO, A.ONDYCL_ADRES, A.ONDYCL_DETAIL_ADRES, A.ONDYCL_ZIP,
+			    A.USER_NM, A.EMPLYR_TY, A.SECSN_AT, A.USER_NCNM, A.ONDYCL_SCHDUL_NO,
+			    TO_CHAR(TO_DATE(A.ONDYCL_SCHDUL_DE, 'YYYY-MM-DD'), 'YYYY.MM.DD') AS ONDYCL_SCHDUL_DE,
+			    A.ONDYCL_SCHDUL_BEGIN_TIME, A.ONDYCL_SCHDUL_END_TIME, A.ADRES_NO, A.ADRES, A.DETAIL_ADRES,
+			    A.ZIP, A.SPCLTY_REALM_NM, A.PTPRT_SPCLTY_REALM_CODE,
+			    E.ONDYCL_RE_NO, E.ONDYCL_RE_CN, E.ONDYCL_RE_WR_DT, E.MBER_NCNM, E.MBER_ID, E.ONDYCL_RE_SCORE
+			FROM 
+			    V_ONDYCL_PRO_USERS A
+			    INNER JOIN RESVE_DETAIL C ON A.ONDYCL_NO = C.ONDYCL_NO
+			    INNER JOIN RESVE D ON C.RESVE_NO = D.RESVE_NO
+			    	AND D.MBER_ID = #{mberId}
+			    INNER JOIN SETLE B ON D.RESVE_NO = B.RESVE_NO
+			    LEFT OUTER JOIN ONDYCL_REVIEW E ON E.ONDYCL_NO = A.ONDYCL_NO
+			    	AND E.MBER_ID = #{mberId}
+			WHERE 
+			    A.ONDYCL_DEL_TYPE != 1
+			<include refid="where"></include>
+		)
+		SELECT T.* FROM T
+		WHERE T.RNUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+		ORDER BY T.ONDYCL_SCHDUL_DE DESC
+	</select>
+	<select id="countMberMyClass" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) FROM V_ONDYCL_PRO_USERS
+		WHERE ONDYCL_NO IN (SELECT ONDYCL_NO FROM RESVE_DETAIL
+							WHERE RESVE_NO IN (SELECT RESVE_NO FROM RESVE
+												WHERE MBER_ID = #{mberId}))
+		AND ONDYCL_DEL_TYPE != 1
+		<include refid="where"></include>
+	</select>
+	
+	<!-- 회원 원데이클래스 결제여부 -->
+	<select id="resveCheck" parameterType="hashMap" resultType="int">
+		SELECT COUNT(B.RESVE_NO)
+		FROM RESVE_DETAIL A INNER JOIN RESVE B
+		ON A.RESVE_NO = B.RESVE_NO
+		AND A.ONDYCL_NO = #{ondyclNo}
+		AND B.MBER_ID =  #{mberId}
+	</select>
+	
+	<!-- 원데이클래스 리스트 출력 -->
+	<select id="vOndyclProUsersVOList" resultMap="vOndyclProUsersMap">
+		SELECT O.ONDYCL_NO, O.ONDYCL_NM, O.ONDYCL_CN, TO_DATE(O.ONDYCL_REGIST_DT,'YYYY.MM.DD HH24:MI')
+		    , O.ONDYCL_PC, O.ONDYCL_PSNCPA, O.ONDYCL_DEL_TYPE, O.ONDYCL_DEL_DT, O.ONDYCL_RESVPA
+		    , O.ONDYCL_THUMB_PHOTO, O.PRO_ID, O.SPRVISE_ATCHMNFL_NO
+		    , O.ONDYCL_ADRES, O.ONDYCL_DETAIL_ADRES, O.ONDYCL_ZIP
+		    , P.PRO_MBTLNUM, P.SEXDSTN_TY, P.EMAIL, P.PRO_PROFL_PHOTO, P.SPCLTY_REALM_CODE
+		    , U.USER_NM, U.EMPLYR_TY, U.SECSN_AT, U.USER_NCNM
+		    , B.ONDYCL_SCHDUL_DE, B.ONDYCL_SCHDUL_BEGIN_TIME, B.ONDYCL_SCHDUL_END_TIME, B.ONDYCL_SCHDUL_NO
+		    , F.SPCLTY_REALM_NM, F.PTPRT_SPCLTY_REALM_CODE
+		FROM ONDYCL O, PRO P, USERS U, ONDYCL_SCHDUL B, ADRES A, SPCLTY_REALM F
+		WHERE O.PRO_ID = P.PRO_ID
+		AND	P.PRO_ID = U.USER_ID
+		AND O.ONDYCL_NO = B.ONDYCL_NO
+		AND O.PRO_ID = A.USER_ID
+		AND P.SPCLTY_REALM_CODE = F.SPCLTY_REALM_CODE
+		AND O.ONDYCL_DEL_TYPE = '0'
+		ORDER BY ONDYCL_NO DESC
+	</select>
+	
+	<!-- 원데이클래스 검색 -->
+	<select id="searchClass" parameterType="hashMap" resultMap="vOndyclProUsersMap">
+		SELECT O.ONDYCL_NO, O.ONDYCL_NM, O.ONDYCL_CN, TO_DATE(O.ONDYCL_REGIST_DT,'YYYY.MM.DD HH24:MI')
+		    , O.ONDYCL_PC, O.ONDYCL_PSNCPA, O.ONDYCL_DEL_TYPE, O.ONDYCL_DEL_DT, O.ONDYCL_RESVPA
+		    , O.ONDYCL_THUMB_PHOTO, O.PRO_ID, O.SPRVISE_ATCHMNFL_NO
+		    , O.ONDYCL_ADRES, O.ONDYCL_DETAIL_ADRES, O.ONDYCL_ZIP
+		    , P.PRO_MBTLNUM, P.SEXDSTN_TY, P.EMAIL, P.PRO_PROFL_PHOTO, P.SPCLTY_REALM_CODE
+		    , U.USER_NM, U.EMPLYR_TY, U.SECSN_AT, U.USER_NCNM
+		    , B.ONDYCL_SCHDUL_DE, B.ONDYCL_SCHDUL_BEGIN_TIME, B.ONDYCL_SCHDUL_END_TIME, B.ONDYCL_SCHDUL_NO
+		    , F.SPCLTY_REALM_NM, F.PTPRT_SPCLTY_REALM_CODE
+		FROM ONDYCL O, PRO P, USERS U, ONDYCL_SCHDUL B, ADRES A, SPCLTY_REALM F
+		WHERE O.PRO_ID = P.PRO_ID
+		AND	P.PRO_ID = U.USER_ID
+		AND O.ONDYCL_NO = B.ONDYCL_NO
+		AND O.PRO_ID = A.USER_ID
+		AND P.SPCLTY_REALM_CODE = F.SPCLTY_REALM_CODE
+		AND O.ONDYCL_DEL_TYPE = '0'
+		<if test="keyword == 'title'">
+			AND O.ONDYCL_NM LIKE '%'||#{firstInput}||'%'
+		</if>
+		<if test="keyword == 'writer'">
+			AND U.USER_NCNM LIKE '%'||#{firstInput}||'%'
+		</if>
+		<if test="keyword == 'date'">
+			<choose>
+				<when test="firstInput != null and firstInput != ''">
+					<choose>
+						<when test="secondInput != null and secondInput != ''">
+							AND B.ONDYCL_SCHDUL_DE BETWEEN TO_DATE(#{firstInput},'YYYYMMDD')
+							AND TO_DATE(#{secondInput},'YYYYMMDD')
+						</when>
+						<otherwise>
+							AND B.ONDYCL_SCHDUL_DE = TO_DATE(#{firstInput},'YYYYMMDD')
+						</otherwise>
+					</choose>
+				</when>
+				<otherwise>
+					AND B.ONDYCL_SCHDUL_DE = TO_DATE(#{secondInput},'YYYYMMDD')
+				</otherwise>
+			</choose>
+		</if>
+		<if test="keyword == 'category'">
+			AND P.SPCLTY_REALM_CODE = #{spcltyRealmCode}
+		</if>
+		<if test="keyword == 'city'">
+			AND TRIM(SUBSTR(A.ADRES,0,INSTR(A.ADRES,' ',1,2))) = #{cityName}
+		</if>
+		<if test="keyword == 'cityAll'">
+			AND TRIM(SUBSTR(A.ADRES,0,INSTR(A.ADRES,' ',1,1))) = #{cityName}
+		</if>
+		ORDER BY ONDYCL_NO DESC
+	</select>
+	
+	<select id="getAttachNo" resultType="int">
+		SELECT SPRVISE_ATCHMNFL_NO_SEQ.NEXTVAL FROM DUAL
+	</select>
+	
+	<!-- 첨부파일 저장 -->
+	<insert id="addSprviseAtchmnfl" parameterType="sprviseAtchmnflVO">
+		INSERT INTO SPRVISE_ATCHMNFL(SPRVISE_ATCHMNFL_NO, ATCHMNFL_NO, ATCHMNFL_COURS, ATCHMNFL_NM, STORE_ATCHMNFL_NM, ATCHMNFL_TY, REGIST_DT, USER_ID)
+		VALUES(#{sprviseAtchmnflNo}, #{atchmnflNo}, #{atchmnflCours}, #{atchmnflNm}, #{storeAtchmnflNm}, #{atchmnflTy}, SYSDATE, #{userId})
+	</insert>
+	
+	<!-- 원데이클래스 저장 -->
+	<insert id="createOndycl" parameterType="hashMap">
+		INSERT ALL
+		    INTO ONDYCL(ONDYCL_NO, ONDYCL_NM, ONDYCL_CN, ONDYCL_REGIST_DT, ONDYCL_PC, ONDYCL_PSNCPA, ONDYCL_THUMB_PHOTO, PRO_ID, SPRVISE_ATCHMNFL_NO, ONDYCL_ADRES, ONDYCL_DETAIL_ADRES, ONDYCL_ZIP)
+		    VALUES(#{ondyclNo},#{ondyclNm},#{ondyclCn},SYSDATE,#{ondyclPc},#{ondyclPsncpa},#{ondyclThumbPhoto},#{proId},#{sprviseAtchmnflNo},#{ondyclAdres},#{ondyclDetailAdres},#{ondyclZip})
+		    INTO ONDYCL_SCHDUL(ONDYCL_SCHDUL_NO, ONDYCL_NO, ONDYCL_SCHDUL_DE, ONDYCL_SCHDUL_BEGIN_TIME, ONDYCL_SCHDUL_END_TIME)
+		    VALUES(ONDYCL_SCHDUL_NO_SEQ.NEXTVAL,#{ondyclNo}, #{ondyclSchdulDe}, #{ondyclSchdulBeginTime}, #{ondyclSchdulEndTime})
+		SELECT * FROM DUAL
+	</insert>
+	
+	<!-- 원데이클래스 업데이트 -->
+	<update id="updateOndycl" parameterType="hashMap">
+		UPDATE ONDYCL
+		SET
+		ONDYCL_NM = #{ondyclNm},
+		ONDYCL_CN = #{ondyclCn},
+		ONDYCL_PC = #{ondyclPc},
+		ONDYCL_PSNCPA = #{ondyclPsncpa},
+			<if test="ondyclThumbPhoto != null and ondyclThumbPhoto != ''">
+				ONDYCL_THUMB_PHOTO = #{ondyclThumbPhoto},
+			</if>
+		ONDYCL_REGIST_DT = SYSDATE,
+		ONDYCL_ADRES = #{ondyclAdres},
+		ONDYCL_DETAIL_ADRES = #{ondyclDetailAdres},
+		ONDYCL_ZIP = #{ondyclZip}
+		<if test="sprviseAtchmnflNo!=null and sprviseAtchmnflNo!=''">
+			,SPRVISE_ATCHMNFL_NO = #{sprviseAtchmnflNo}
+		</if>
+		WHERE ONDYCL_NO = #{ondyclNo}
+	</update>
+	<update id="updateOndyclSchdul" parameterType="hashMap">
+		UPDATE ONDYCL_SCHDUL
+		SET
+		ONDYCL_SCHDUL_DE = #{ondyclSchdulDe},
+		ONDYCL_SCHDUL_BEGIN_TIME = #{ondyclSchdulBeginTime},
+		ONDYCL_SCHDUL_END_TIME = #{ondyclSchdulEndTime}
+		WHERE ONDYCL_NO = #{ondyclNo}
+	</update>
+	<update id="updateSprviseAtchmnfl" parameterType="sprviseAtchmnflVO">
+		UPDATE SPRVISE_ATCHMNFL
+		SET
+		ATCHMNFL_NO = #{atchmnflNo}
+		, ATCHMNFL_COURS = #{atchmnflCours}
+		, ATCHMNFL_NM = #{atchmnflNm}
+		, STORE_ATCHMNFL_NM = #{storeAtchmnflNm}
+		, ATCHMNFL_TY = #{atchmnflTy}
+		, UPDT_DT = SYSDATE
+		WHERE SPRVISE_ATCHMNFL_NO = #{sprviseAtchmnflNo}
+	</update>
+	
+	<!-- 원데이클래스 삭제 -->
+	<update id="deleteClass" parameterType="String">
+		UPDATE ONDYCL
+		SET ONDYCL_DEL_TYPE = '1', ONDYCL_DEL_DT = SYSDATE
+		WHERE ONDYCL_NO = #{classNo}
+	</update>
+	
+	<!-- 방금 등록한 원데이클래스 번호 조회 -->
+	<select id="getInsertClNum" resultType="int">
+		SELECT ONDYCL_NO_SEQ.NEXTVAL FROM DUAL
+	</select>
+	
+	<!-- 원데이클래스 첨부파일번호 가져오기 -->
+	<select id="thisAttachNo" parameterType="int" resultType="int">
+		SELECT SPRVISE_ATCHMNFL_NO FROM ONDYCL WHERE ONDYCL_NO = #{ondyclNo}
+	</select>
+	
+	<!-- 원데이클래스 첨부파일 저장 -->
+	<resultMap type="sprviseAtchmnflVO" id="fileMap">
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="atchmnflNo" column="ATCHMNFL_NO"/>
+		<result property="atchmnflCours" column="ATCHMNFL_COURS"/>
+		<result property="atchmnflNm" column="ATCHMNFL_NM"/>
+		<result property="storeAtchmnflNm" column="STORE_ATCHMNFL_NM"/>
+		<result property="atchmnflTy" column="ATCHMNFL_TY"/>
+		<result property="registDt" column="REGIST_DT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="updtDt" column="UPDT_DT"/>
+	</resultMap>
+	<select id="fileList" parameterType="String" resultMap="fileMap">
+		SELECT SPRVISE_ATCHMNFL_NO, ATCHMNFL_NO, ATCHMNFL_COURS, ATCHMNFL_NM, STORE_ATCHMNFL_NM, ATCHMNFL_TY, REGIST_DT, USER_ID, UPDT_DT
+		FROM SPRVISE_ATCHMNFL
+		WHERE SPRVISE_ATCHMNFL_NO = (SELECT SPRVISE_ATCHMNFL_NO FROM ONDYCL WHERE ONDYCL_NO = #{ondyclNo})
+	</select>
+	
+	<!-- 시군구 리스트  -->
+	<resultMap type="brtcVO" id="brtcMap">
+		<result property="brtcCode" column="BRTC_CODE"/>
+		<result property="bcityCode" column="BCITY_CODE"/>
+		<result property="brtcNm" column="BRTC_NM"/>
+	</resultMap>
+	<select id="brtcSelect" parameterType="String" resultMap="brtcMap">
+		SELECT BRTC_CODE, BCITY_CODE, BRTC_NM
+		FROM BRTC
+		WHERE BCITY_CODE = #{bcityCode}
+	</select>
+	
+	<!-- 광역시 리스트 -->
+	<resultMap type="bcityVO" id="bcityMap">
+		<result property="bcityCode" column="BCITY_CODE"/>
+		<result property="bcityNm" column="BCITY_NM"/>
+	</resultMap>
+	<select id="getBcity" resultMap="bcityMap">
+		SELECT BCITY_CODE, BCITY_NM FROM BCITY
+	</select>
+	
+	<!-- 전문분야 리스트 -->
+	<resultMap type="spcltyRealmVO" id="codeMap">
+		<result property="lev" column="lev"/>
+		<result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+		<result property="spcltyRealmNm" column="SPCLTY_REALM_NM"/>
+		<result property="ptprtSpcltyRealmCode" column="PTPRT_SPCLTY_REALM_CODE"/>
+	</resultMap>
+	<select id="category" resultMap="codeMap">
+		SELECT 
+		    LEVEL AS lev
+		    , SPCLTY_REALM_CODE
+		    , SPCLTY_REALM_NM
+		    , PTPRT_SPCLTY_REALM_CODE
+		FROM SPCLTY_REALM
+		START WITH PTPRT_SPCLTY_REALM_CODE IS NULL
+		CONNECT BY PTPRT_SPCLTY_REALM_CODE = PRIOR SPCLTY_REALM_CODE
+		ORDER SIBLINGS BY SPCLTY_REALM_CODE
+	</select>
+	
+	<!-- 프로 카테고리 이름 출력 -->
+	<select id="getCodeNm"	parameterType="String" resultType="String">
+		SELECT SPCLTY_REALM_NM
+		FROM SPCLTY_REALM
+		WHERE SPCLTY_REALM_CODE = #{codeCd}
+	</select>
+	
+	<!-- 구매 번호 구하기 -->
+	<select id="getResveNo" resultType="int">
+		SELECT RESVE_NO_SEQ.NEXTVAL FROM DUAL
+	</select>
+	
+	<!-- 원데이클래스 단일구매 -->
+	<insert id="buyClass" parameterType="hashMap">
+    INSERT ALL
+        INTO RESVE(RESVE_NO, RESVE_TOTQY, RESVE_TPPRICE, RESVE_DT, MBER_ID)
+        VALUES(#{resveNo}, 1, #{resveTpprice}, SYSDATE, #{mberId})
+        INTO SETLE(SETLE_NO, RESVE_NO, SETLE_DT, SETLE_MN_CODE)
+        VALUES(#{setleNo}, #{resveNo}, SYSDATE, 'SEM03')
+        INTO RESVE_DETAIL(RESVE_NO, ONDYCL_SCHDUL_NO, ONDYCL_NO, RESVE_TOTQY, RESVE_TPPRICE)
+        VALUES(#{resveNo}, #{ondyclSchdulNo}, #{ondyclNo}, 1, #{resveTpprice})
+    SELECT * FROM DUAL
+	</insert>
+	
+	<!-- 구매 후 원데이클래스 참여인원 +1 -->
+	<update id="plusndyclResvpa" parameterType="hashMap">
+		UPDATE ONDYCL
+		SET ONDYCL_RESVPA = (SELECT ONDYCL_RESVPA FROM ONDYCL WHERE ONDYCL_NO = #{ondyclNo}) + 1
+		WHERE ONDYCL_NO = #{ondyclNo}
+	</update>
+	
+	<!-- 원데이클래스 상세페이지 조회 -->
+	<select id="detail" parameterType="String" resultType="vOndyclProUsersVO">
+		SELECT PRO_ID, PRO_MBTLNUM, SEXDSTN_TY, EMAIL, PRO_PROFL_PHOTO, SPCLTY_REALM_CODE
+			, ONDYCL_NO, ONDYCL_NM, ONDYCL_CN, ONDYCL_REGIST_DT, ONDYCL_PC, ONDYCL_PSNCPA, ONDYCL_RESVPA
+			, ONDYCL_ADRES, ONDYCL_DETAIL_ADRES, ONDYCL_ZIP, ONDYCL_SCHDUL_NO
+			, ONDYCL_DEL_TYPE, ONDYCL_DEL_DT, ONDYCL_THUMB_PHOTO, SPRVISE_ATCHMNFL_NO, USER_NM, EMPLYR_TY, SECSN_AT, USER_NCNM
+			, ONDYCL_SCHDUL_DE, ONDYCL_SCHDUL_BEGIN_TIME, ONDYCL_SCHDUL_END_TIME, ADRES_NO, ADRES, DETAIL_ADRES, ZIP
+			, SPCLTY_REALM_NM, PTPRT_SPCLTY_REALM_CODE
+		FROM V_ONDYCL_PRO_USERS
+		WHERE ONDYCL_NO = #{ondyclNo}
+	</select>
+	<!-- 등록자들 목록 출력 -->
+	<select id="getBuyer" parameterType="String" resultType="userNcnmMberPhotoVO">
+		SELECT U.USER_NCNM, M.MBER_PROFL_PHOTO FROM MBER M
+		JOIN RESVE R ON M.MBER_ID = R.MBER_ID
+		JOIN USERS U ON U.USER_ID = R.MBER_ID
+		JOIN RESVE_DETAIL RD ON R.RESVE_NO = RD.RESVE_NO
+		AND RD.ONDYCL_NO = #{ondyclNo}
+	</select>
+	
+	<!-- 원데이클래스 총 갯수 -->
+	<select id="countOndycl" resultType="int">
+		SELECT COUNT(*) FROM ONDYCL
+	</select>
+	
+	<!-- 원데이클래스 첨부파일 삭제 -->
+	<delete id="deleteSprviseAtchmnfl" parameterType="int">
+		DELETE FROM SPRVISE_ATCHMNFL A
+		WHERE  A.SPRVISE_ATCHMNFL_NO = (
+		        SELECT B.SPRVISE_ATCHMNFL_NO FROM ONDYCL B WHERE B.ONDYCL_NO = #{ondyclNo}
+		    )
+	</delete>
+</mapper>

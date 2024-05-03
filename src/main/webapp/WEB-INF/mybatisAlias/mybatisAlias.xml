@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+<configuration>
+	<!-- 
+	[마이바티스] 스프링에서 "_"를 사용한 컬럼명을 사용 시(BOOK 테이블의 BOOK_ID)를 카멜케이스로 읽어줌(bookId)
+	-->
+	<settings>
+		<setting name="mapUnderscoreToCamelCase" value="true"/>
+	</settings>
+	<!-- 자주 사용하는 타입의 별칭을 세팅 -->
+	<typeAliases>
+		<typeAlias type="kr.or.ddit.vo.AdresVO" alias="adresVO" />
+		<typeAlias type="kr.or.ddit.vo.AftusBbscttAnswerVO" alias="aftusBbscttAnswerVO" />
+		<typeAlias type="kr.or.ddit.vo.AftusBbscttVO" alias="aftusBbscttVO" />
+		<typeAlias type="kr.or.ddit.vo.AuthorVO" alias="authorVO" />
+		<typeAlias type="kr.or.ddit.vo.BcityVO" alias="bcityVO" />
+		<typeAlias type="kr.or.ddit.vo.BrtcVO" alias="brtcVO" />
+		<typeAlias type="kr.or.ddit.vo.ChttSpceConectrVO" alias="chttSpceConectrVO" />
+		<typeAlias type="kr.or.ddit.vo.CommonCdDetailVO" alias="commonCdDetailVO" />
+		<typeAlias type="kr.or.ddit.vo.CommonCdVO" alias="commonCdVO" />
+		<typeAlias type="kr.or.ddit.admin.faq.vo.FaqVO" alias="faqVO" />
+		<typeAlias type="kr.or.ddit.admin.usersSearch.vo.UsersVO" alias="usersVO2" />
+		<typeAlias type="kr.or.ddit.vo.LbrtyBbscttAnswerVO" alias="lbrtyBbscttAnswerVO" />
+		<typeAlias type="kr.or.ddit.vo.LbrtyBbscttAnswerVO2" alias="lbrtyBbscttAnswerVO2" />
+		<typeAlias type="kr.or.ddit.vo.LbrtyBbscttVO" alias="lbrtyBbscttVO" />
+		<typeAlias type="kr.or.ddit.vo.LbrtyBbscttVO2" alias="lbrtyBbscttVO2" />
+		<typeAlias type="kr.or.ddit.vo.MberVO" alias="mberVO" />
+		<typeAlias type="kr.or.ddit.vo.MngrVO" alias="mngrVO" />
+		<typeAlias type="kr.or.ddit.vo.MssageVO" alias="mssageVO" />
+		<typeAlias type="kr.or.ddit.admin.notice.vo.NoticeVO" alias="noticeVO" />
+		<typeAlias type="kr.or.ddit.alarm.vo.NtchDetailVO" alias="ntchDetailVO" />
+		<typeAlias type="kr.or.ddit.alarm.vo.NtchVO" alias="ntchVO" />
+		<typeAlias type="kr.or.ddit.vo.OndyclReviewVO" alias="ondyclReviewVO" />
+		<typeAlias type="kr.or.ddit.vo.OndyclSchdulVO" alias="ondyclSchdulVO" />
+		<typeAlias type="kr.or.ddit.vo.OndyclVO" alias="ondyclVO" />
+		<typeAlias type="kr.or.ddit.vo.OneInqryAnswerVO" alias="oneInqryAnswerVO" />
+		<typeAlias type="kr.or.ddit.vo.OneInqryVO" alias="oneInqryVO" />
+		<typeAlias type="kr.or.ddit.vo.ProBkmkVO" alias="proBkmkVO" />
+		<typeAlias type="kr.or.ddit.board.pro_collabo.vo.ProCprtnAnswerVO" alias="proCprtnAnswerVO" />
+		<typeAlias type="kr.or.ddit.board.pro_collabo.vo.ProCprtnBbscttVO" alias="proCprtnBbscttVO" />
+		<typeAlias type="kr.or.ddit.vo.ProJoBbscttAnswerVO" alias="proJoBbscttAnswerVO" />
+		<typeAlias type="kr.or.ddit.vo.ProJoBbscttVO" alias="proJoBbscttVO" />
+		<typeAlias type="kr.or.ddit.vo.ProProflVO" alias="proProflVO" />
+		<typeAlias type="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO" alias="proStoryBbscttVO" />
+		<typeAlias type="kr.or.ddit.vo.ProVO" alias="proVO" />
+		<typeAlias type="kr.or.ddit.vo.PrtfolioVO" alias="prtfolioVO" />
+		<typeAlias type="kr.or.ddit.vo.PunshVO" alias="punshVO" />
+		<typeAlias type="kr.or.ddit.vo.ResveDetailVO" alias="resveDetailVO" />
+		<typeAlias type="kr.or.ddit.vo.ResveVO" alias="resveVO" />
+		<typeAlias type="kr.or.ddit.vo.ReviewVO" alias="reviewVO" />
+		<typeAlias type="kr.or.ddit.vo.SetleVO" alias="setleVO" />
+		<typeAlias type="kr.or.ddit.vo.ShopngBundleVO" alias="shopngBundleVO" />
+		<typeAlias type="kr.or.ddit.vo.SntncDeclVO" alias="sntncDeclVO" />
+		<typeAlias type="kr.or.ddit.vo.SpcltyRealmVO" alias="spcltyRealmVO" />
+		<typeAlias type="kr.or.ddit.vo.SprviseAtchmnfl" alias="sprviseAtchmnfl" />
+		<typeAlias type="kr.or.ddit.vo.SprviseAtchmnflVO" alias="sprviseAtchmnflVO" />
+		<typeAlias type="kr.or.ddit.vo.SrvcBtfInqryVO" alias="srvcBtfInqryVO" />
+		<typeAlias type="kr.or.ddit.vo.SrvcRequstVO" alias="srvcRequstVO" />
+		<typeAlias type="kr.or.ddit.vo.TdmtngChSpMshgVO" alias="tdmtngChSpMshgVO" />
+		<typeAlias type="kr.or.ddit.vo.TdmtngPrtcpntVO" alias="tdmtngPrtcpntVO" />
+		<typeAlias type="kr.or.ddit.vo.TdmtngVO" alias="tdmtngVO" />
+		<typeAlias type="kr.or.ddit.vo.UserDeclVO" alias="userDeclVO" />
+		<typeAlias type="kr.or.ddit.vo.UsersVO" alias="usersVO" />
+		<typeAlias type="kr.or.ddit.vo.VMberUsersVO" alias="vMberUsersVO" />
+		<typeAlias type="kr.or.ddit.vo.VProUsersVO" alias="vProUsersVO" />
+		<typeAlias type="kr.or.ddit.vo.VOndyclProUsersVO" alias="vOndyclProUsersVO" />
+		<typeAlias type="kr.or.ddit.vo.VOndyclSchdulVO" alias="vOndyclSchdulVO" />
+		<typeAlias type="kr.or.ddit.vo.ReviewMberVO" alias="reviewMberVO" />
+		<typeAlias type="kr.or.ddit.vo.BundleOndyclVO" alias="bundleOndyclVO" />
+		<typeAlias type="kr.or.ddit.vo.UserNcnmMberPhotoVO" alias="userNcnmMberPhotoVO" />
+		<typeAlias type="kr.or.ddit.pro_service.service_inquiry.vo.V_SrvcBtfInqryVO" alias="vSrvcBtfInqryVO"/>
+		<typeAlias type="kr.or.ddit.pro_service.service_request.vo.V_SrvcRequstVO" alias="vSrvcRequstVO"/>
+		<typeAlias type="kr.or.ddit.vo.VCityVO" alias="vCityVO" />
+		<typeAlias type="kr.or.ddit.vo.VPrtfolioVO" alias="vPrtfolioVO" />
+		<typeAlias type="kr.or.ddit.vo.DongChartVO" alias="dongChartVO" />
+		<typeAlias type="kr.or.ddit.vo.DongChartVO2" alias="dongChartVO2" />
+		<typeAlias type="kr.or.ddit.vo.DongChartVO3" alias="dongChartVO3" />
+		
+	</typeAliases>
+</configuration>

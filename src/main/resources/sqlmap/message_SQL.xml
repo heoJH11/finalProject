@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.chatting.mapper.MessageMapper">
+
+	<insert id="insert" parameterType="kr.or.ddit.vo.TdmtngChSpMshgVO">
+	/** kr.or.ddit.chatting.mapper.MessageMapper INSERT */
+		INSERT INTO TDMTNG_CH_SP_MSG(
+										  TDMTNG_CH_SP_MSG_NO
+										, TDMTNG_CH_SP_MSG_TRNSMIS_DT
+										, TDMTNG_CH_SP_MSG_CN
+										, TDMTNG_CH_SP_MSG_CNFIRM_AT
+										, USER_ID
+										, TDMTNG_NO)
+							VALUES(
+										SEQ_CHAT_MSG.NEXTVAL
+									 , #{tdmtngChSpMsgTrnsmisDt}
+									 , #{tdmtngChSpMsgCn}
+									 , #{tdmtngChSpMsgCnfirmAt}
+									 , #{userId}
+									 , #{tdmtngNo} )
+	</insert>
+	
+	<select id="firstMsg" parameterType="tdmtngVO" resultType="tdmtngVO">
+		
+		SELECT TDMTNG_NO, TDMTNG_NM, FIRST_MSG
+		  FROM TDMTNG
+		 WHERE 1 = 1
+		   AND USER_ID = #{userId}
+		   AND TDMTNG_NO = #{tdmtngNo}
+	</select>
+	
+	<select id="messageList" parameterType="int" resultType="kr.or.ddit.chatting.vo.MessageVO">
+	/** kr.or.ddit.chatting.mapper.MessageMapper messageList 채팅방 메세지 리스트 */
+		SELECT
+			     A.MSG_NO
+			  , A.TO_CHAR(TO_DATE(MSG_SEND_DATE , 'YYYYMMDDHH24MISS') , 'YYYY/MM/DD HH24:MI:SS') AS MSG_SEND_DATE
+			  , A.MSG_CONT
+			  , A.MSG_CHECK
+			  , A.ROOM_NO
+			  , A.USER_ID
+			  , B.USER_NCNM
+		 FROM MESSAGE A , USERS B
+		WHERE 1 = 1
+		  AND A.USER_ID = B.USER_ID
+		  AND ROOM_NO = #{roomNo}
+		ORDER BY MSG_SEND_DATE ASC
+	</select>
+	
+	<select id="roomMsgList" parameterType="int" resultType="kr.or.ddit.vo.TdmtngChSpMshgVO">
+	/** kr.or.ddit.chatting.mapper.MessageMapper roomMsgList 채팅방 메세지 리스트 */
+		SELECT
+			     A.TDMTNG_CH_SP_MSG_NO
+			   , TO_CHAR(TO_DATE(A.TDMTNG_CH_SP_MSG_TRNSMIS_DT , 'YYYYMMDDHH24MISS') , 'YYYYMMDD HH24:MI:SS') AS TDMTNG_CH_SP_MSG_TRNSMIS_DT
+			   , A.TDMTNG_CH_SP_MSG_CN
+			   , A.TDMTNG_CH_SP_MSG_CNFIRM_AT
+			   , A.TDMTNG_NO
+			   , A.USER_ID
+			   , B.USER_NCNM
+		 FROM  TDMTNG_CH_SP_MSG A , USERS B
+		WHERE  1 = 1
+		  AND  A.USER_ID = B.USER_ID
+		  AND  TDMTNG_NO = #{tdmtngNo}
+		ORDER  BY TDMTNG_CH_SP_MSG_TRNSMIS_DT ASC
+	</select>
+	
+	<select id="messageTest" parameterType="kr.or.ddit.todaymeeting.controller.TestVO" resultType="kr.or.ddit.vo.TdmtngChSpMshgVO">
+	/** kr.or.ddit.chatting.mapper.MessageMapper messageTest	*/
+			
+<!-- 			SELECT   TDMTNG_CH_SP_MSG_NO -->
+<!-- 				   , TDMTNG_CH_SP_MSG_TRNSMIS_DT -->
+<!-- 			       , TDMTNG_CH_SP_MSG_CN -->
+<!-- 			       , TDMTNG_CH_SP_MSG_CNFIRM_AT -->
+<!-- 			       , USER_ID -->
+<!-- 			       , TDMTNG_NO -->
+<!-- 			FROM ( -->
+<!-- 				     SELECT   TDMTNG_CH_SP_MSG_NO -->
+<!-- 						    , TDMTNG_CH_SP_MSG_TRNSMIS_DT -->
+<!-- 						    , TDMTNG_CH_SP_MSG_CN -->
+<!-- 						    , TDMTNG_CH_SP_MSG_CNFIRM_AT -->
+<!-- 						    , USER_ID -->
+<!-- 						    , TDMTNG_NO -->
+<!-- 						    , ROW_NUMBER() OVER (ORDER BY TDMTNG_CH_SP_MSG_NO ASC) AS RN -->
+<!-- 					  FROM 	( -->
+<!-- 						        SELECT   TDMTNG_CH_SP_MSG_NO -->
+<!-- 							           , TO_CHAR(TO_DATE(TDMTNG_CH_SP_MSG_TRNSMIS_DT , 'YYYYMMDDHH24MISS') , 'YYYY/MM/DD HH24:MI:SS') AS TDMTNG_CH_SP_MSG_TRNSMIS_DT -->
+<!-- 							           , TDMTNG_CH_SP_MSG_CN -->
+<!-- 							           , TDMTNG_CH_SP_MSG_CNFIRM_AT -->
+<!-- 							           , USER_ID -->
+<!-- 							           , TDMTNG_NO -->
+<!-- 						          FROM  TDMTNG_CH_SP_MSG -->
+<!-- 						         WHERE  TDMTNG_NO = #{tdmtngNo} -->
+<!-- 				    		) -->
+<!-- 				) -->
+<!-- 			WHERE 1 = 1 AND RN > #{currentPage} AND RN <![CDATA[<=]]> #{endPage} -->
+			
+	</select>
+	
+	<select id="scrollTest" parameterType="map" resultType="tdmtngChSpMshgVO">
+	/** kr.or.ddit.chatting.mapper.MessageMapper scrollTest */
+			SELECT
+					  TDMTNG_CH_SP_MSG_NO
+					, TDMTNG_CH_SP_MSG_TRNSMIS_DT
+					, TDMTNG_CH_SP_MSG_CN
+					, TDMTNG_CH_SP_MSG_CNFIRM_AT
+					, USER_ID
+					, TDMTNG_NO
+			  FROM (
+			  			SELECT 		
+			  						TDMTNG_CH_SP_MSG_NO
+						  		  , TO_CHAR(TO_DATE(TDMTNG_CH_SP_MSG_TRNSMIS_DT , 'YYYYMMDDHH24MISS') , 'YYYY-MM-DD HH24:MI:SS') AS TDMTNG_CH_SP_MSG_TRNSMIS_DT
+						  		  , TDMTNG_CH_SP_MSG_CN
+						  		  , TDMTNG_CH_SP_MSG_CNFIRM_AT
+						  		  , USER_ID
+						  		  , TDMTNG_NO
+						  		  , ROW_NUMBER() OVER (ORDER BY TDMTNG_CH_SP_MSG_TRNSMIS_DT ASC) AS RN
+						  FROM 	TDMTNG_CH_SP_MSG
+						 WHERE 	TDMTNG_NO = #{tdmtngNo}
+					)
+					<where></where>
+				WHERE 1 = 1	AND RN BETWEEN (#{startRn} - 19) AND #{endRn}
+				ORDER BY RN ASC
+	</select>
+	
+	<select id="getMsgCount" parameterType="int" resultType="int">
+	/** kr.or.ddit.chatting.mapper.MessageMapper getMsgCount */
+		SELECT COUNT(*)
+		  FROM TDMTNG_CH_SP_MSG
+		 WHERE 1 = 1
+		   AND TDMTNG_NO = #{tdmtngNo}
+	</select>
+	
+	
+	<select id="firstMsgDate" parameterType="int" resultType="String">
+		/** kr.or.ddit.chatting.mapper.MessageMapper firstMsgDate	*/
+		SELECT
+			    SUBSTR(MSG_SEND_DATE, 1, 8),
+		    	MSG_NO
+		FROM
+			    MESSAGE
+		WHERE
+    		   (MSG_SEND_DATE , MSG_NO) = (
+			                SELECT
+			                    MIN(MSG_SEND_DATE),
+			                    MIN(MSG_NO)
+			                FROM
+			                    MESSAGE    
+			                WHERE
+			                    ROOM_NO = #{roomNo}
+			   )
+				AND ROOM_NO = #{roomNo}
+	</select>
+
+</mapper>

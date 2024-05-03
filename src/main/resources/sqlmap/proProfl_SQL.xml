@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro.proProfl.mapper.ProProflMapper">
+	
+	<select id="list" resultType="bCityVO">
+		SELECT * FROM BCITY ORDER BY BCITY_CODE
+	</select>
+	
+	<select id="getBrtcList" resultType="vCityVO">
+		SELECT BRTC_NM FROM V_CITY WHERE BCITY_NM = #{bcityNm}
+	</select>
+	
+	<select id="bcCode" resultType="String">
+		SELECT BCITY_CODE 
+		FROM BCITY
+		WHERE BCITY_NM IN (SELECT BCITY_NM FROM BCITY WHERE BCITY_NM=#{bcityNm})
+	</select>
+	
+	<select id="btCode" resultType="String">
+		SELECT BRTC_CODE 
+		FROM V_CITY
+		WHERE BCITY_NM = #{bcityNm} AND BRTC_NM = #{brtcNm}
+	</select>
+	
+	
+	<insert id="createPost" parameterType="proProflVO">
+		INSERT INTO PRO_PROFL(PRO_ID, PRO_PROFL_ON_LI_INTRCN, PRO_PROFL_CONTACT_POSBL_TIME, PRO_PROFL_REQ_FORM, PRO_PROFL_HIST, BCITY_CODE, BRTC_CODE)
+		VALUES(#{proId},#{proProflOnLiIntrcn},#{proProflContactPosblTime},#{proProflReqForm},#{proProflHist},#{bcityCode},#{brtcCode})
+	</insert>
+	
+	
+	<resultMap type="proProflVO" id="proProflMap">
+		<result property="proId" column="PRO_ID"/>
+		<result property="proProflOnLiIntrcn" column="PRO_PROFL_ON_LI_INTRCN"/>
+		<result property="proProflContactPosblTime" column="PRO_PROFL_CONTACT_POSBL_TIME"/>
+		<result property="proProflReqForm" column="PRO_PROFL_REQ_FORM"/>
+		<result property="proProflHist" column="PRO_PROFL_HIST"/>
+		<result property="bcityCode" column="BCITY_CODE"/>
+		<result property="brtcCode" column="BRTC_CODE"/>
+		<result property="adres" column="ADRES"/>
+		<result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+	</resultMap>
+
+	
+	<select id="detail" parameterType="String" resultMap="proProflMap">
+		SELECT A.*, B.ADRES, C.PRO_PROFL_PHOTO
+		FROM PRO_PROFL A
+		JOIN ADRES B ON A.PRO_ID = B.USER_ID
+		JOIN PRO C ON B.USER_ID = C.PRO_ID
+		WHERE A.PRO_ID = #{proId}
+	</select>
+	
+	<select id="getProInfo" parameterType="String" resultType="vProUsersVO">
+		SELECT * FROM V_PRO_USERS WHERE PRO_ID = #{proId}
+	</select>
+	
+	<select id="getProId" parameterType="String" resultType="proProflVO">
+		SELECT PRO_ID FROM PRO_PROFL WHERE PRO_ID=#{sessionId}
+	</select>
+	
+	<resultMap type="prtfolioVO" id="vPrtfolioMap">
+		<result property="prtfolioNo" column="PRTFOLIO_NO"/>
+		<result property="prtfolioSj" column="PRTFOLIO_SJ"/>
+		<result property="prtfolioWrDt" column="PRTFOLIO_WR_DT"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="proId" column="PRO_ID"/>
+		<collection property="SpAtVOList" resultMap="SpAtMap"></collection>
+	</resultMap>
+	
+	<resultMap type="sprviseAtchmnflVO" id="SpAtMap">
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="atchmnflNo" column="ATCHMNFL_NO"/>
+		<result property="atchmnflCours" column="ATCHMNFL_COURS"/>
+		<result property="atchmnflNm" column="ATCHMNFL_NM"/>
+		<result property="storeAtchmnflNm" column="STORE_ATCHMNFL_NM"/>
+		<result property="atchmnflTy" column="ATCHMNFL_TY"/>
+		<result property="registDt" column="REGIST_DT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="updtDt" column="UPDT_DT"/>
+	</resultMap>
+	<!-- 
+	A.PRTFOLIO_NO, A.PRTFOLIO_SJ, A.PRTFOLIO_WR_DT, A.SPRVISE_ATCHMNFL_NO, A.PRO_ID
+	, B.ATCHMNFL_NO, ATCHMNFL_COURS, B.ATCHMNFL_NM, B.STORE_ATCHMNFL_NM, ATCHMNFL_TY, B.REGIST_DT, B.UPDT_DT
+	FROM PRTFOLIO A, SPRVISE_ATCHMNFL B
+	 -->
+	<select id="prtTumb" parameterType="String" resultMap="vPrtfolioMap">
+		SELECT * 
+		FROM V_PRTFOLIO
+		WHERE PRO_ID=#{proId}
+	</select>
+	
+	<select id="portfolioPicture" parameterType="String" resultType="vPrtfolioVO">
+	    SELECT * 
+	    FROM V_PRTFOLIO
+	    WHERE SPRVISE_ATCHMNFL_NO = #{sprviseAtchmnflNo}
+	</select> 	
+	
+	<update id="modify" parameterType="proProflVO">
+	UPDATE PRO_PROFL
+	SET PRO_ID=#{proId}, 
+		PRO_PROFL_ON_LI_INTRCN=#{proProflOnLiIntrcn}, 
+		PRO_PROFL_CONTACT_POSBL_TIME=#{proProflContactPosblTime}, 
+		PRO_PROFL_REQ_FORM=#{proProflReqForm}, 
+		PRO_PROFL_HIST=#{proProflHist}, 
+		BCITY_CODE=#{bcityCode}, 
+		BRTC_CODE=#{brtcCode}
+	WHERE PRO_ID =  #{proId}
+	</update>
+
+
+	<select id="getBcityNm" resultType="String">
+		SELECT BCITY_NM 
+		FROM BCITY
+		WHERE BCITY_CODE = #{bcityCode}
+	</select>
+	
+	<select id="getBrtcNm" resultType="String">
+		SELECT BRTC_NM
+		FROM BRTC
+		WHERE BRTC_CODE = #{brtcCode}
+	</select>
+	
+	<select id="getBunryu" resultType="String">
+		SELECT SPCLTY_REALM_NM
+		FROM SPCLTY_REALM
+		WHERE SPCLTY_REALM_CODE=#{spcltyRealmCode}
+	</select>
+	
+	<select id="getSrvcCount" resultType="int">
+		SELECT COUNT(*) FROM SRVC_REQUST
+		WHERE SRVC_REQUST_PROCESS_MBER =1 AND SRVC_REQUST_PROCESS_PRO=1
+      	AND PRO_ID=#{proId}
+	</select>
+	
+	<select id="getRevCount" resultType="int">
+		SELECT COUNT(*) 
+		FROM
+		(SELECT A.*, B.PRO_ID
+		FROM REVIEW A
+		JOIN SRVC_REQUST B 
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE PRO_ID = #{proId})
+	</select>
+	
+	<select id="getBkmkCount" resultType="int">
+		SELECT COUNT(*)
+		FROM PRO_BKMK
+		WHERE PRO_ID=#{proId}
+	</select>
+	
+	
+	<resultMap type="reviewVO" id="reviewVOMap">
+		<result property="reNo" column="RE_NO"/>
+		<result property="reTy" column="RE_TY"/>
+		<result property="reCn" column="RE_CN"/>
+		<result property="reWrDt" column="RE_WR_DT"/>
+		<result property="reScore" column="RE_SCORE"/>
+		<result property="srvcRequstNo" column="SRVC_REQUST_NO"/>
+		<collection property="srvcReVOList" resultMap="srvcReviewVOMap"></collection>
+		<collection property="mberReviewVOList" resultMap="mberReviewVOMap"></collection>
+		<collection property="userReviewVOList" resultMap="userReviewVOMap"></collection>
+		<collection property="comReviewVOList" resultMap="comReviewVOMap"></collection>
+	</resultMap>
+	
+	<resultMap type="srvcRequstVO" id="srvcReviewVOMap">
+		<result property="mberId" column="MBER_ID"/>
+		<result property="proId" column="PRO_ID"/>
+	</resultMap>
+	
+	<resultMap type="mberVO" id="mberReviewVOMap">
+		<result property="mberProflPhoto" column="MBER_PROFL_PHOTO"/>
+		<result property="mberId" column="MBER_ID"/>
+	</resultMap>
+	
+	<resultMap type="usersVO" id="userReviewVOMap">
+		<result property="userNcnm" column="USER_NCNM"/>
+	</resultMap>
+	
+	<resultMap type="commonCdDetailVO" id="comReviewVOMap">
+		<result property="commonCdDetail" column="COMMON_CD_DETAIL"/>
+		<result property="commonCdDetailNm" column="COMMON_CD_DETAIL_NM"/>
+	</resultMap>
+	
+	<select id="getReview" parameterType="hashMap" resultMap="reviewVOMap">
+	WITH T AS (
+	    SELECT A.*,
+	           B.PRO_ID,
+	           B.MBER_ID,
+	           B.SRVC_REQUST_COMPT_DT,
+	           C.USER_NCNM,
+	           D.MBER_PROFL_PHOTO,
+	           E.COMMON_CD_DETAIL_NM,
+	           E.COMMON_CD_DETAIL,
+	           ROW_NUMBER() OVER(ORDER BY B.SRVC_REQUST_COMPT_DT DESC) AS RNUM
+	    FROM REVIEW A,
+	         SRVC_REQUST B,
+	         USERS C,
+	         MBER D,
+	         COMMON_CD_DETAIL E
+	    WHERE A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+	      AND B.MBER_ID = C.USER_ID
+	      AND C.USER_ID = D.MBER_ID
+	      AND A.RE_TY = E.COMMON_CD_DETAIL
+	      AND B.PRO_ID = #{proId}
+	)
+	SELECT * 
+	FROM T
+	WHERE RNUM BETWEEN (#{currentPage} * #{size}) - (#{size} - 1) AND (#{currentPage} * #{size})
+	</select>
+	
+	<select id="getRevCnt2" parameterType="hashMap" resultType="int">
+		SELECT COUNT(*) 
+		FROM
+		(SELECT A.*, B.PRO_ID
+		FROM REVIEW A
+		JOIN SRVC_REQUST B 
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE PRO_ID = #{proId})
+	
+	</select>
+	
+	
+	<!-- 동균 신고로 인해 추가 -->
+	<select id="declComCdDeSelect" resultType="commonCdDetailVO">
+		select COMMON_CD_DETAIL, COMMON_CD, COMMON_CD_DETAIL_NM, 
+			COMMON_CD_DETAIL_EXPLAN, COMMON_CD_DETAIL_USE_WH
+		from COMMON_CD_DETAIL
+		where common_cd = 'DECL_RESN_USER'
+	</select>
+	
+	<insert id="declInsert" parameterType="userDeclVO">
+		INSERT INTO user_decl (
+    		decl_no, decl_resn, user_id, user_id2
+		) VALUES (
+    		USER_DECL_NO_SEQ.nextval,#{declResn},#{userId},#{userId2}
+		)
+	</insert>
+	
+	<update id="declUpdate" parameterType="userDeclVO">
+		update users 
+			set decl_count = 
+			(select nvl(decl_count,0)+1 
+				from users
+				where user_id = #{userId2})
+		where user_id = #{userId2}
+	</update>
+	<!-- 동균 신고로 인해 추가 끝 -->
+</mapper>

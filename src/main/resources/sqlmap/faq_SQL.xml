@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.faq.mapper.FaqMapper">
+	
+	<select id="faqList" parameterType="faqVO" resultType="faqVO" >
+		select * from faq
+	</select>
+	
+	<update id="faqUpdate" parameterType="faqVO">
+		update faq
+		set FAQ_QESTN = #{faqQestn},
+			FAQ_ANSWER = #{faqAnswer}	
+		where FAQ_NO = #{faqNo}
+		
+	</update>
+	
+	<delete id = "delete" parameterType="faqVO">
+		delete from faq
+		where faq_no = #{faqNo}
+	</delete>
+	
+	<insert id="createRegister" parameterType="faqVO">
+	
+		<selectKey resultType="int" order="BEFORE" keyProperty="faqNo">
+			SELECT NVL(MAX(faq_No),0)+1 FROM faq
+		</selectKey>
+		
+			insert into faq(FAQ_NO, FAQ_QESTN, FAQ_ANSWER, MNGR_ID)
+			values(#{faqNo},#{faqQestn},#{faqAnswer},#{mngrId})
+	
+	</insert>
+	
+</mapper>

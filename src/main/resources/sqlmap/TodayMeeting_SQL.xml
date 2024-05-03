@@ -1,0 +1,233 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.todaymeeting.mapper.TodayMeetingMapper">
+
+	<sql id="where">
+		<if test="keyword!=null and keyword!=''">
+			AND (
+			<if test="selectColumn == '모임명'">
+					TDMTNG_NM LIKE '%' || #{keyword} || '%'
+			</if>
+			<if test="selectColumn == '모임장'">
+					A.USER_ID
+					IN (SELECT USER_ID FROM USERS WHERE USER_NCNM LIKE '%' || #{keyword} || '%')
+			</if>
+			)
+		</if>
+		<if test="selectColumn == '모임일자'">		
+			AND TDMTNG_DT BETWEEN 
+				TO_DATE(REPLACE(#{dateKeyword1}, 'T', ' '), 'YYYY-MM-DD HH24:MI')
+            AND TO_DATE(REPLACE(#{dateKeyword2}, 'T', ' '), 'YYYY-MM-DD HH24:MI')  
+		</if>
+	</sql>
+	
+	<select id="findAll" parameterType="String" resultType="tdmtngVO">
+		SELECT
+			TDMTNG_NO
+			,TDMTNG_NM
+			,TDMTNG_DT
+		FROM TDMTNG
+		WHERE TDMTNG_NO
+			IN (SELECT TDMTNG_NO FROM TDMTNG_PRTCPNT 
+			WHERE USER_ID=#{userId})
+	</select>
+	
+	<select id="list" parameterType="hashMap" resultType="tdmtngVO">
+		SELECT T.* FROM
+		(
+		SELECT 
+			ROW_NUMBER() OVER(ORDER BY TDMTNG_NO ASC) RNUM
+			, A.TDMTNG_NO
+			, A.TDMTNG_NM
+			, TO_CHAR(A.TDMTNG_DT, 'YYYY.MM.DD') TDMTNG_DT
+			, B.USER_NCNM
+			, C.PRO_PROFL_PHOTO
+			, D.MBER_PROFL_PHOTO
+		FROM TDMTNG A
+		INNER JOIN USERS B ON A.USER_ID = B.USER_ID
+        LEFT JOIN PRO C ON A.USER_ID = C.PRO_ID
+        LEFT JOIN MBER D ON A.USER_ID = D.MBER_ID
+        WHERE 1=1
+		<include refid="where"></include>
+		) T
+		WHERE  T.RNUM 
+			BETWEEN (#{total} - (10 * (#{currentPage} - 1)) - 9) 
+			AND 	(#{total} - (10 * (#{currentPage} - 1)))
+		ORDER BY RNUM DESC
+	</select>
+
+    <select id="getTotal" resultType="int">
+		SELECT COUNT(*) FROM TDMTNG A
+		WHERE 1 = 1
+		<include refid="where"></include>
+	</select>
+	
+
+	<select id="detail" parameterType="int" resultType="tdmtngVO">
+		SELECT 
+			A.TDMTNG_NO
+			, A.TDMTNG_NM
+			, TO_CHAR(A.TDMTNG_CREAT_DT, 'YYYY.MM.DD HH24:MI') TDMTNG_CREAT_DT
+			, TO_CHAR(A.TDMTNG_DT, 'YYYY.MM.DD HH24:MI') TDMTNG_DT
+			, A.TDMTNG_CN, A.USER_ID
+			, A.TDMTNG_THUMB_PHOTO
+			, B.USER_NCNM
+			, A.TDMTNG_MAX
+		FROM TDMTNG A, USERS B
+		WHERE B.USER_ID=A.USER_ID AND A.TDMTNG_NO = #{tdmtngNo}
+	</select>
+	
+	<insert id="create" parameterType="tdmtngVO">
+	 	/** kr.or.ddit.todaymeeting.mapper.TodayMeetingMapper CREATE */
+    	<selectKey keyProperty="tdmtngNo" resultType="int" order="BEFORE">
+        	SELECT TDMTNG_NO_SEQ.NEXTVAL FROM DUAL
+    	</selectKey>
+    	INSERT ALL
+    	<if test="tdmtngThumbPhoto != null">
+        	INTO TDMTNG
+        		(TDMTNG_NO, TDMTNG_NM, TDMTNG_CREAT_DT , TDMTNG_DT
+        		, TDMTNG_CN, USER_ID, TDMTNG_THUMB_PHOTO, TDMTNG_MAX , FIRST_MSG)
+        	VALUES(#{tdmtngNo}, #{tdmtngNm}
+        		, SYSDATE, TO_DATE(REPLACE(#{tdmtngDt}, 'T', ' '), 'YYYY-MM-DD HH24:MI:SS') 
+        		, #{tdmtngCn}, #{userId}, #{tdmtngThumbPhoto}, #{tdmtngMax} , 'T')
+        	INTO TDMTNG_PRTCPNT(TDMTNG_NO , USER_ID)
+        	VALUES(#{tdmtngNo} ,#{userId})
+        	
+    	</if>
+    	
+    	<if test="tdmtngThumbPhoto == null">
+        	INTO TDMTNG(TDMTNG_NO, TDMTNG_NM, TDMTNG_CREAT_DT, TDMTNG_DT
+        		, TDMTNG_CN, USER_ID, TDMTNG_MAX , FIRST_MSG)
+        	VALUES(#{tdmtngNo}, #{tdmtngNm}
+        		, SYSDATE, TO_DATE(REPLACE(#{tdmtngDt}, 'T', ' '), 'YYYY-MM-DD HH24:MI:SS')
+        		, #{tdmtngCn}, #{userId}, #{tdmtngMax} , 'T')
+        	INTO TDMTNG_PRTCPNT(TDMTNG_NO , USER_ID)
+        	VALUES(#{tdmtngNo} ,#{userId})
+    	</if>
+    	SELECT * FROM DUAL
+	</insert>
+	
+ 	<update id="update" parameterType="tdmtngVO">
+		UPDATE TDMTNG
+		SET TDMTNG_NM=#{tdmtngNm}
+		, TDMTNG_DT=TO_DATE(REPLACE(#{tdmtngDt}, 'T', ' '), 'YYYY-MM-DD HH24:MI:SS')
+		, TDMTNG_CN=#{tdmtngCn}, TDMTNG_MAX=#{tdmtngMax}
+		<if test="tdmtngThumbPhoto != null">
+            , TDMTNG_THUMB_PHOTO=#{tdmtngThumbPhoto}
+        </if>
+		WHERE TDMTNG_NO=#{tdmtngNo}
+	</update>
+	
+	<delete id="delete" parameterType="int">
+		DELETE 
+		FROM TDMTNG
+		WHERE TDMTNG_NO=#{tdmtngNo}
+	</delete>
+	
+	
+	<select id="selectMyChat" parameterType="tdmtngPrtcpntVO" resultType="tdmtngPrtcpntVO">
+		SELECT TDMTNG_NO FROM TDMTNG_PRTCPNT 
+		WHERE USER_ID=#{userId} AND TDMTNG_NO=#{tdmtngNo}
+	</select>
+	
+	<insert id="joinChat" parameterType="tdmtngPrtcpntVO">
+		INSERT INTO TDMTNG_PRTCPNT(TDMTNG_NO, USER_ID)
+		VALUES(#{tdmtngNo} ,#{userId})
+	</insert>
+	
+	<select id="chatMemList" parameterType="int" resultMap="tdmtngPrtcpntMap">
+		SELECT A.USER_ID, B.EMPLYR_TY, B.USER_NCNM
+			, C.PRO_PROFL_PHOTO, D.MBER_PROFL_PHOTO
+		FROM TDMTNG_PRTCPNT A
+		INNER JOIN USERS B ON A.USER_ID = B.USER_ID
+        LEFT JOIN PRO C ON A.USER_ID = C.PRO_ID
+        LEFT JOIN MBER D ON A.USER_ID = D.MBER_ID
+		WHERE A.TDMTNG_NO=#{tdmtngNo}
+	</select>	
+	
+	<select id="chatMemCount" parameterType="int" resultType="int">
+		SELECT COUNT(*) FROM TDMTNG_PRTCPNT
+		WHERE TDMTNG_NO=#{tdmtngNo}
+	</select>
+	
+	<resultMap type="tdmtngPrtcpntVO" id="tdmtngPrtcpntMap">
+		<result property="userId" column="USER_ID"/>
+		<result property="tdmtngNo" column="TDMTNG_NO"/>
+		<result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+		<result property="mberProflPhoto" column="MBER_PROFL_PHOTO"/>
+		<collection property="usersVOList" resultMap="usersMap"></collection>
+	</resultMap>
+	<resultMap type="usersVO" id="usersMap">
+		<result property="emplyrTy" column="EMPLYR_TY" />
+		<result property="userNcnm" column="USER_NCNM" />
+		<result property="userId" column="USER_ID" />
+	</resultMap>
+
+
+	<!-- @@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@@ -->
+	<!-- 방입장 -->
+	<select id="join" parameterType="java.util.Map" resultType="kr.or.ddit.todaymeeting.VChatRoom">
+	/** kr.or.ddit.todaymeeting.mapper.TodayMeetingMapper JOIN */
+		SELECT
+			     A.TDMTNG_NO
+			   , A.TDMTNG_NM
+<!-- 			   , TO_CHAR(A.TDMTNG_CREAT_DT, 'YYYY.MM.DD HH24:MI:SS') as tdmtngCreateDt -->
+<!-- 			   , A.TDMTNG_CREAT_DT as tdmtngCreateDt2 -->
+			   , TO_CHAR(A.TDMTNG_CREAT_DT, 'YYYY.MM.DD HH24:MI') as tdmtngCreateDt
+			   , TO_CHAR(A.TDMTNG_DT, 'YYYY.MM.DD HH24:MI') as tdmtngDt
+			   , A.TDMTNG_CREAT_DT as tdmtngCreateDt2
+			   , B.USER_ID
+		  FROM
+		  		 TDMTNG A
+		  	   , TDMTNG_PRTCPNT B
+		 WHERE	   A.TDMTNG_NO = B.TDMTNG_NO
+		 	   AND B.TDMTNG_NO = #{tdmtngNo}
+		 	   AND B.USER_ID   = #{userId}
+		 ORDER BY TDMTNG_NO
+	</select>
+
+	<select id="myList" parameterType="string" resultType="kr.or.ddit.todaymeeting.VChatRoom">
+	/** kr.or.ddit.todaymeeting.mapper.TodayMeetingMapper MYLIST */
+		SELECT
+				  A.TDMTNG_NO
+				, A.TDMTNG_NM
+				, TO_CHAR(A.TDMTNG_CREAT_DT, 'YYYY.MM.DD HH24:MI:SS') as tdmtngCreateDt
+				, A.TDMTNG_CREAT_DT as tdmtngCreateDt2
+				, A.USER_ID
+				, TO_CHAR(B.TDMTNG_DT, 'YYYY.MM.DD HH24:MI:SS') as tdmtngDt
+				, B.TDMTNG_CN
+		  FROM V_CHAT_ROOM A , TDMTNG B
+         WHERE 1 = 1
+           AND A.TDMTNG_NO = B.TDMTNG_NO
+           AND A.USER_ID = #{userId}
+		 ORDER BY TDMTNG_NO DESC
+	</select>
+	
+	<select id="getUserInfo" parameterType="String" resultType="kr.or.ddit.vo.UsersVO">
+		SELECT
+				USER_ID
+			  , USER_NM
+			  , USER_PASSWORD
+			  , EMPLYR_TY
+			  , SECSN_AT
+			  , USER_NCNM
+			  , CHANGE_PW_CK
+			  , DECL_COUNT
+		 FROM  USERS
+		WHERE  USER_ID = #{userId}
+	
+	</select>
+	
+	<update id="updateFirstMSG" parameterType="tdmtngVO">
+	
+	/** kr.or.ddit.todaymeeting.mapper.TodayMeetingMapper updateFirstMSG */
+		UPDATE TDMTNG
+		   SET FIRST_MSG = 'F'
+		 WHERE 1 = 1
+		   AND TDMTNG_NO=#{tdmtngNo}
+		   AND USER_ID = #{userId}
+		   
+	</update>
+
+</mapper>

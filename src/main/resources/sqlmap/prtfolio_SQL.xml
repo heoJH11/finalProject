@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro.prtFolio.mapper.PrtfolioMapper">
+	
+	<insert id="createPost" parameterType="prtfolioVO">
+	   <selectKey keyProperty="sprviseAtchmnflNo" resultType="int" order="BEFORE">
+	       SELECT SPRVISE_ATCHMNFL_NO_SEQ.nextval FROM DUAL
+	   </selectKey>
+	    INSERT INTO PRTFOLIO(PRTFOLIO_NO, PRTFOLIO_SJ, PRTFOLIO_WR_DT, SPRVISE_ATCHMNFL_NO, PRO_ID) 
+	    VALUES (PRTFOLIO_NO_SEQ.nextval, #{prtfolioSj}, SYSDATE, #{sprviseAtchmnflNo}, #{proId})
+	</insert>
+	
+	<insert id="insertSprvise" parameterType="sprviseAtchmnflVO">
+		INSERT INTO SPRVISE_ATCHMNFL(SPRVISE_ATCHMNFL_NO, ATCHMNFL_NO, ATCHMNFL_COURS, ATCHMNFL_NM, STORE_ATCHMNFL_NM, 
+		ATCHMNFL_TY, REGIST_DT, USER_ID, UPDT_DT) 
+		VALUES(#{sprviseAtchmnflNo},#{atchmnflNo},#{atchmnflCours},#{atchmnflNm},#{storeAtchmnflNm},#{atchmnflTy},SYSDATE,#{userId},NULL)
+	</insert>
+	
+	<delete id="deletePrt" parameterType="int">
+		DELETE FROM PRTFOLIO WHERE SPRVISE_ATCHMNFL_NO =#{sprviseAtchmnflNo}
+	</delete>
+</mapper>

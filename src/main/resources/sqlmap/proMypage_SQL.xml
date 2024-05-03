@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro.mypage.mapper.ProMypageMapper">
+	<!-- 전화번호 수정 -->
+	<update id="updProMbtlnum" parameterType="hashMap">
+		UPDATE V_PRO_USERS
+		SET PRO_MBTLNUM = #{proMbtlnum}
+		WHERE 1=1
+		AND USER_ID = #{userId}
+	</update>
+	
+	<!-- 비번 수정 -->
+	<update id="updPW" parameterType="hashMap">
+		UPDATE V_PRO_USERS
+		SET USER_PASSWORD = #{userPassword},
+		CHANGE_PW_CK = 0
+		WHERE 1=1
+		AND USER_ID = #{userId}
+	</update>
+	
+	<!-- 닉네임 수정 -->
+	<update id="updNcnm" parameterType="hashMap">
+		UPDATE V_PRO_USERS
+		SET USER_NCNM = #{userNcnm}
+		WHERE 1=1
+		AND USER_ID = #{userId}
+	</update>
+	<update id="updEmail" parameterType="hashMap">
+		UPDATE V_PRO_USERS
+		SET EMAIL=#{email}
+		WHERE USER_ID = #{userId}
+	</update>
+	<update id="updNm" parameterType="hashMap">
+		UPDATE V_PRO_USERS
+		SET USER_NM=#{userNm}
+		WHERE USER_ID = #{userId}
+	</update>
+		<update id="updAdres" parameterType="hashMap">
+		MERGE INTO ADRES
+		USING DUAL ON (USER_ID = #{userId})
+		WHEN MATCHED THEN 
+			UPDATE
+			SET ADRES = #{adres}, DETAIL_ADRES=#{detailAdres}, ZIP=#{zip}
+		WHEN NOT MATCHED THEN
+			INSERT (ADRES, DETAIL_ADRES, ZIP, USER_ID, ADRES_NO)
+			VALUES(#{adres}, #{detailAdres}, #{zip}, #{userId}, ADRES_SEQ.NEXTVAL)
+	</update>
+	
+	
+	<!-- 프사 수정 -->
+	<update id="updPhoto" parameterType="hashMap">
+		<choose>
+			<when test="profile == null || profile == ''">
+				UPDATE V_PRO_USERS
+				SET PRO_PROFL_PHOTO = null
+				WHERE 1=1
+				AND USER_ID = #{userId}
+			</when>
+			<otherwise>
+				UPDATE V_PRO_USERS
+				SET PRO_PROFL_PHOTO = #{proProflPhoto}
+				WHERE 1=1
+				AND USER_ID = #{userId}
+			</otherwise>
+		</choose>
+	</update>
+	
+	<!-- 프사 삭제 -->
+	<update id="photoDelete" parameterType="String">
+		UPDATE V_PRO_USERS
+		SET PRO_PROFL_PHOTO = null
+		WHERE 1=1
+		AND USER_ID = #{userId}
+	</update>
+	
+</mapper>

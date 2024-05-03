@@ -1,0 +1,210 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.board.pro_hunting.mapper.ProHuntingMapper">
+
+
+	<delete id="delProAnswer" parameterType="map">
+		DELETE PRO_JO_BBSCTT_ANSWER
+		WHERE PRO_JO_BBSCTT_NO = #{proJoBbscttNo} AND PRO_ID = #{proId}
+	</delete>
+	
+	<insert id="proAnswerRegister" parameterType="map">
+		INSERT INTO PRO_JO_BBSCTT_ANSWER(PRO_JO_ANSWER_NO, PRO_JO_BBSCTT_NO, PRO_JO_ANSWER_CN, PRO_JO_ANSWER_WR_DT, PRO_ID)
+		VALUES(PRO_JO_ANSWER_NO_SEQ.NEXTVAL, #{proJoBbscttNo}, #{proJoAnswerCn}, SYSDATE, #{proId})
+	</insert>
+	
+	<update id="rdCntUpdt" parameterType="int">
+	UPDATE PRO_JO_BBSCTT
+	SET PRO_JO_BBSCTT_RDCNT = PRO_JO_BBSCTT_RDCNT + 1
+	WHERE PRO_JO_BBSCTT_NO = #{proJoBbscttNo}
+	</update>
+
+	<select id="detail" parameterType="int" resultMap="proHuntMap">
+		SELECT A.PRO_JO_BBSCTT_NO, A.PRO_JO_BBSCTT_SJ, A.PRO_JO_BBSCTT_CN, A.PRO_JO_BBSCTT_WR_DT, A.PRO_JO_BBSCTT_RDCNT, A.MBER_ID, A.MBER_NCNM, A.SPRVISE_ATCHMNFL_NO, 
+		B.PRO_JO_ANSWER_NO, B.PRO_JO_BBSCTT_NO, B.PRO_JO_ANSWER_CN, B.PRO_JO_ANSWER_WR_DT, B.PRO_ID, B.PRO_NCNM, B.PRO_PROFL_PHOTO
+		FROM
+		(SELECT PJB.PRO_JO_BBSCTT_NO, PJB.PRO_JO_BBSCTT_SJ, PJB.PRO_JO_BBSCTT_CN, PJB.PRO_JO_BBSCTT_WR_DT, PJB.PRO_JO_BBSCTT_RDCNT, PJB.MBER_ID, PJB.SPRVISE_ATCHMNFL_NO,
+		MB.USER_NCNM AS MBER_NCNM, MB.MBER_EMPLYR_TY, MB.MBER_PROFL_PHOTO
+		FROM PRO_JO_BBSCTT PJB 
+		LEFT JOIN (SELECT M.MBER_ID, M.MBER_PROFL_PHOTO, U.USER_NCNM, U.EMPLYR_TY AS MBER_EMPLYR_TY
+		           FROM MBER M
+		           LEFT JOIN USERS U
+		           ON M.MBER_ID = U.USER_ID
+		           ) MB
+		ON PJB.MBER_ID = MB.MBER_ID) A 
+		LEFT JOIN 
+		(SELECT PJBA.PRO_JO_BBSCTT_NO, PJBA.PRO_JO_ANSWER_NO, PJBA.PRO_JO_ANSWER_CN, PJBA.PRO_JO_ANSWER_WR_DT, PJBA.PRO_ID,
+		PR.USER_NCNM AS PRO_NCNM, PR.PRO_EMPLYR_TY, PR.PRO_PROFL_PHOTO
+		FROM PRO_JO_BBSCTT_ANSWER PJBA 
+		LEFT JOIN (SELECT P.PRO_ID, P.PRO_PROFL_PHOTO, U.USER_NCNM, U.EMPLYR_TY AS PRO_EMPLYR_TY
+		           FROM PRO P
+		           LEFT JOIN USERS U
+		           ON P.PRO_ID = U.USER_ID
+		           ) PR
+		ON PJBA.PRO_ID = PR.PRO_ID) B
+		ON A.PRO_JO_BBSCTT_NO = B.PRO_JO_BBSCTT_NO
+		WHERE A.PRO_JO_BBSCTT_NO = #{proJoBbscttNo}
+	</select>
+	
+	<select id="getTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM PRO_JO_BBSCTT PJB 
+		LEFT JOIN (SELECT M.MBER_ID, M.MBER_PROFL_PHOTO, U.USER_NCNM, U.EMPLYR_TY AS MBER_EMPLYR_TY
+		           FROM MBER M
+		           LEFT JOIN USERS U
+		           ON M.MBER_ID = U.USER_ID
+		           ) MB
+		ON PJB.MBER_ID = MB.MBER_ID
+		<choose>
+			<when test="keyword != null and keyword!='' and t_selectColumn != 'ALL'">
+				WHERE
+				${t_selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(t_selectColumn)">
+				WHERE
+				(PRO_JO_BBSCTT_SJ LIKE '%' || #{keyword}  || '%'
+					OR USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+	</select>
+
+	<select id="myBoardListgetTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM PRO_JO_BBSCTT PJB 
+		LEFT JOIN (SELECT M.MBER_ID, M.MBER_PROFL_PHOTO, U.USER_NCNM, U.EMPLYR_TY AS MBER_EMPLYR_TY
+		           FROM MBER M
+		           LEFT JOIN USERS U
+		           ON M.MBER_ID = U.USER_ID
+		           ) MB
+		ON PJB.MBER_ID = MB.MBER_ID
+		WHERE MB.MBER_ID = #{userId} 
+		<choose>
+			<when test="keyword != null and keyword!='' and t_selectColumn != 'ALL'">
+				WHERE
+				${t_selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(t_selectColumn)">
+				WHERE
+				(PRO_JO_BBSCTT_SJ LIKE '%' || #{keyword}  || '%'
+					OR USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+	</select>
+	
+	
+	<select id="listAjax" parameterType="map" resultMap="proHuntMap">
+		SELECT
+		A.NUM, A.*
+		FROM 
+		(SELECT ROW_NUMBER() OVER (ORDER BY PJB.PRO_JO_BBSCTT_WR_DT ASC) NUM,
+		PJB.PRO_JO_BBSCTT_NO, PJB.PRO_JO_BBSCTT_SJ, PJB.PRO_JO_BBSCTT_CN, PJB.PRO_JO_BBSCTT_WR_DT, PJB.PRO_JO_BBSCTT_RDCNT, PJB.MBER_ID,
+		MB.USER_NCNM, MB.MBER_EMPLYR_TY, MB.MBER_PROFL_PHOTO
+		FROM PRO_JO_BBSCTT PJB 
+		LEFT JOIN (SELECT M.MBER_ID, M.MBER_PROFL_PHOTO, U.USER_NCNM, U.EMPLYR_TY AS MBER_EMPLYR_TY
+		           FROM MBER M
+		           LEFT JOIN USERS U
+		           ON M.MBER_ID = U.USER_ID
+		           ) MB
+		ON PJB.MBER_ID = MB.MBER_ID) A
+		WHERE A.NUM BETWEEN ((#{totalPages} - #{currentPage}) * 10) - #{endPage} AND ((#{totalPages} - #{currentPage} + 1) * 10) - #{endPage} + 1
+				<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				AND
+				${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(selectColumn)" >
+				AND
+				(A.PRO_JO_BBSCTT_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+		ORDER BY A.NUM DESC
+	</select>
+
+	<select id="myBoardList" parameterType="map" resultMap="proHuntMap">
+		SELECT
+		A.NUM, A.*
+		FROM 
+		(SELECT ROW_NUMBER() OVER (ORDER BY PJB.PRO_JO_BBSCTT_WR_DT ASC) NUM,
+		PJB.PRO_JO_BBSCTT_NO, PJB.PRO_JO_BBSCTT_SJ, PJB.PRO_JO_BBSCTT_CN, PJB.PRO_JO_BBSCTT_WR_DT, PJB.PRO_JO_BBSCTT_RDCNT, PJB.MBER_ID,
+		MB.USER_NCNM, MB.MBER_EMPLYR_TY, MB.MBER_PROFL_PHOTO
+		FROM PRO_JO_BBSCTT PJB 
+		LEFT JOIN (SELECT M.MBER_ID, M.MBER_PROFL_PHOTO, U.USER_NCNM, U.EMPLYR_TY AS MBER_EMPLYR_TY, U.USER_ID
+		           FROM MBER M
+		           LEFT JOIN USERS U
+		           ON M.MBER_ID = U.USER_ID
+		           ) MB
+		ON PJB.MBER_ID = MB.MBER_ID
+		WHERE MB.USER_ID=#{userId}) A
+		WHERE A.NUM BETWEEN ((#{totalPages} - #{currentPage}) * 5) + 1 AND ((#{totalPages} - #{currentPage} + 1) * 5)
+				<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				AND
+				${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(selectColumn)" >
+				AND
+				(A.PRO_JO_BBSCTT_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+		ORDER BY A.NUM DESC
+	</select>
+	
+	<resultMap type="proJoBbscttVO" id="proHuntMap">
+		<result property="num" column="NUM"/>
+		<result property="proJoBbscttNo" column="PRO_JO_BBSCTT_NO"/>
+		<result property="proJoBbscttSj" column="PRO_JO_BBSCTT_SJ"/>
+		<result property="proJoBbscttCn" column="PRO_JO_BBSCTT_CN"/>
+		<result property="proJoBbscttWrDt" column="PRO_JO_BBSCTT_WR_DT"/>
+		<result property="proJoBbscttRdcnt" column="PRO_JO_BBSCTT_RDCNT"/>
+		<result property="mberId" column="MBER_ID"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<collection property="proJoBbscttAnswerVOList" resultMap="proJoBbscttAnswerMap"></collection>
+		<collection property="mberVOList" resultMap="mberMap"></collection>
+		<collection property="sprviseAtchmnflVOList" resultMap="sprviseAtchMap"></collection>
+	</resultMap>
+	
+	<resultMap type="proJoBbscttAnswerVO" id="proJoBbscttAnswerMap">
+		<result property="proJoAnswerNo" column="PRO_JO_ANSWER_NO"/>
+		<result property="proJoBbscttNo" column="PRO_JO_BBSCTT_NO"/>
+		<result property="proJoAnswerCn" column="PRO_JO_ANSWER_CN"/>
+		<result property="proJoAnswerWrDt" column="PRO_JO_ANSWER_WR_DT"/>
+		<result property="proId" column="PRO_ID"/>
+		<result property="proNcnm" column="PRO_NCNM" />
+		<result property="proProflPhoto" column="PRO_PROFL_PHOTO" />
+		
+	</resultMap>
+	
+	<resultMap type="proVO" id="proMap">
+		<result property="proId" column="PRO_ID"/>
+		<result property="proMbtlnum" column="PRO_MBTLNUM"/>
+		<result property="sexdstnTy" column="SEXDSTN_TY"/>
+		<result property="email" column="EMAIL"/>
+		<result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+		<result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+	</resultMap>
+	
+	<resultMap type="mberVO" id="mberMap">
+		<result property="mberId" column="MBER_ID"/>
+		<result property="mberMbtlnum" column="MBER_MBTLNUM"/>
+		<result property="sexdstnTy" column="SEXDSTN_TY"/>
+		<result property="email" column="EMAIL"/>
+		<result property="mberProflPhoto" column="MBER_PROFL_PHOTO"/>
+		<result property="userNcnm" column="USER_NCNM"/>
+		<result property="mberNcnm" column="MBER_NCNM"/>
+	</resultMap>
+	
+	<resultMap type="sprviseAtchmnflVO" id="sprviseAtchMap">
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="atchmnflNo" column="ATCHMNFL_NO"/>
+		<result property="atchmnflCours" column="ATCHMNFL_COURS"/>
+		<result property="atchmnflNm" column="ATCHMNFL_NM"/>
+		<result property="storeAtchmnflNm" column="STORE_ATCHMNFL_NM"/>
+		<result property="atchmnflTy" column="ATCHMNFL_TY"/>
+		<result property="registDt" column="REGIST_DT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="updtDt" column="UPDT_DT"/>
+	</resultMap>
+
+</mapper>

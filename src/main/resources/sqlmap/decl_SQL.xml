@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.decl.mapper.DeclMapper">
+
+	<sql id="where">
+		<if test="keyword!=null and keyword!=''">
+			AND (
+			USER_ID '%' || #{keyword} || '%'
+			)
+		</if>
+	</sql>
+
+	<select id="decllbrSelect" resultType="sntncDeclVO">
+		select DENSE_RANK()
+		OVER(ORDER BY DECL_BBSCTT_NO) AS rnum,
+		DECL_BBSCTT_NO, DECL_PROCESS_AT,
+		DECL_TARGET, COUNT(*) count
+		from SNTNC_DECL
+		where DECL_TARGET =
+		'LBRTY_BBSCTT'
+
+		group by DECL_BBSCTT_NO, DECL_TARGET, DECL_PROCESS_AT
+		order by count desc
+	</select>
+
+	<select id="lbrtyBbscttVo" parameterType="sntncDeclVO"
+		resultType="lbrtyBbscttVO2">
+		select * from V_${declTarget}
+		where LBRTY_BBSCTT_NO =
+		${declBbscttNo}
+	</select>
+
+	<select id="declResnList" parameterType="sntncDeclVO"
+		resultType="sntncDeclVO">
+		select DECL_RESN, DECL_PROCESS_AT, COUNT(*) count from
+		SNTNC_DECL
+		where DECL_BBSCTT_NO = ${declBbscttNo}
+		and decl_target = #{declTarget}
+		group by DECL_RESN, DECL_PROCESS_AT
+	</select>
+
+	<update id="declSet1" parameterType="int">
+		update lbrty_bbsctt
+		set
+		DEL_TYPE= 1
+		where
+		LBRTY_BBSCTT_NO = ${lbrtyBbscttNo}
+	</update>
+
+	<update id="declSet2" parameterType="int">
+		UPDATE sntnc_decl
+		SET
+		DECL_PROCESS_AT = 1
+		WHERE
+		DECL_BBSCTT_NO = ${lbrtyBbscttNo}
+		AND DECL_TARGET = 'LBRTY_BBSCTT'
+	</update>
+	
+	<update id="declSet3" parameterType="int">
+		UPDATE LBRTY_BBSCTT
+		SET
+		DEL_TYPE = 1
+		WHERE
+		LBRTY_BBSCTT_NO = #{lbrtyBbscttNo}
+	</update>
+
+	<select id="userList" resultType="usersVO">
+		<!-- select USER_ID, USER_NM, USER_PASSWORD, EMPLYR_TY, SECSN_AT, USER_NCNM,
+    		(select count(*) from user_decl where user_id2 = #{userId}) as count
+		from users
+		where (select count(*) from user_decl where user_id2 = #{userId}) > 0 -->
+		select USER_ID, USER_NM,
+			USER_PASSWORD,
+			EMPLYR_TY, SECSN_AT, USER_NCNM, DECL_COUNT
+		from users
+		where decl_count > 0
+        order by DECL_COUNT desc
+		
+	</select>
+
+	<select id="getDeclCount" parameterType="string"
+		resultType="int">
+		select count(*)from user_decl
+		where user_id2 = #{userId2}
+	</select>
+
+	<select id="userDeclList" parameterType="string"
+		resultType="userDeclVO">
+		select user_id2, decl_resn, DECL_PROCESS_AT,count(*) count
+		from user_decl
+		where user_id2 = #{userId}
+		group by user_id2,
+		DECL_PROCESS_AT, decl_resn
+	</select>
+
+	<insert id="userDeclSet" parameterType="hashMap">
+		INSERT INTO punsh (
+		punsh_no,
+		punsh_end_de,
+		punsh_str_de,
+		user_id
+		) VALUES (
+		PUNSH_NO_SEQ.NEXTVAL,
+		(select nvl(max(PUNSH_END_DE),sysdate)+ ${punshDe} from PUNSH
+		where user_id = #{userId}) ,
+		(select nvl(max(PUNSH_END_DE),sysdate) from PUNSH
+		where user_id = #{userId}),
+		#{userId}
+		)
+	</insert>
+
+	<update id="declProcessAtSet" parameterType="hashMap">
+		update USER_DECL
+		set
+		decl_process_at = 1
+		where user_id2 = #{userId}
+	</update>
+
+	<select id="declHistoryList" parameterType="string"
+		resultType="punshVO">
+		select PUNSH_NO, PUNSH_END_DE, PUNSH_STR_DE, USER_ID
+		from
+		punsh
+		where user_id = #{userId}
+		order by punsh_no
+	</select>
+	
+</mapper>

@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro_service.service_request.mapper.SrvcRequstMapper">
+
+	 <select id="getTotal" parameterType="map" resultType="int">
+   		SELECT count(*)
+		FROM
+		(SELECT * FROM V_SRVC_REQUST
+		<choose>
+			<when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND MBER_ID=#{vSrvcRequstVO.userId}
+			</when>
+			<when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND PRO_ID=#{vSrvcRequstVO.userId}
+			</when>
+		</choose>
+		) A
+		<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				WHERE
+				${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(selectColumn)">
+				WHERE
+				(A.SRVC_REQUST_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+   	</select>
+
+	 <select id="getNoAnswerTotal" parameterType="map" resultType="int">
+   		SELECT count(*)
+		FROM
+		(SELECT * FROM V_SRVC_REQUST
+		<choose>
+			<when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND MBER_ID=#{vSrvcRequstVO.userId}
+				AND SRVC_REQUST_PROCESS_AT = 0
+			</when>
+			<when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND PRO_ID=#{vSrvcRequstVO.userId}
+				AND SRVC_REQUST_PROCESS_AT = 0
+			</when>
+		</choose>
+		) A
+   	</select>
+   	
+	 <select id="getSuccessTotal" parameterType="map" resultType="int">
+   		SELECT count(*)
+		FROM
+		(SELECT * FROM V_SRVC_REQUST
+		<choose>
+			<when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND MBER_ID=#{vSrvcRequstVO.userId}
+				AND SRVC_REQUST_PROCESS_AT = 1
+			</when>
+			<when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND PRO_ID=#{vSrvcRequstVO.userId}
+				AND SRVC_REQUST_PROCESS_AT = 1
+			</when>
+		</choose>
+		) A
+   	</select>
+   	
+	 <select id="getRejectTotal" parameterType="map" resultType="int">
+   		SELECT count(*)
+		FROM
+		(SELECT * FROM V_SRVC_REQUST
+		<choose>
+			<when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND MBER_ID=#{vSrvcRequstVO.userId}
+				AND SRVC_REQUST_PROCESS_AT = 2
+			</when>
+			<when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND PRO_ID=#{vSrvcRequstVO.userId}
+				AND SRVC_REQUST_PROCESS_AT = 2
+			</when>
+		</choose>
+		) A
+   	</select>
+	
+	<select id="srvcRqList" parameterType="map" resultType="vSrvcRequstVO">
+		WITH T AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY B.SRVC_REQUST_WR_DT DESC) AS NUM, B.* 
+        FROM (
+            SELECT  A.*, B.PRO_PROFL_PHOTO
+               FROM V_SRVC_REQUST A
+               LEFT JOIN V_PRO_USERS B
+               ON A.PRO_ID = B.PRO_ID
+            <choose>
+                <when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.MBER_ID=#{vSrvcRequstVO.userId}
+                </when>
+                <when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.PRO_ID=#{vSrvcRequstVO.userId}
+                </when>
+            </choose>
+            <choose>
+                <when test="keyword != null and keyword != '' and selectColumn != 'ALL'">
+                    AND ${selectColumn} LIKE '%' || #{keyword} || '%'
+                </when>
+                <when test="keyword != null and keyword != '' and 'ALL'.equals(selectColumn)">
+                    AND (
+                        A.SRVC_REQUST_SJ LIKE '%' || #{keyword} || '%' OR 
+                        A.USER_NCNM LIKE '%' || #{keyword} || '%'
+                        )
+                </when>
+            </choose>
+	        ) B
+	    )
+	    SELECT T.* 
+	    FROM T
+	    WHERE T.NUM BETWEEN (#{currentPage}*#{size}) - (#{size} - 1) AND (#{currentPage}*#{size})
+	</select>
+
+	<select id="srvcRqNoAnswerList" parameterType="map" resultType="vSrvcRequstVO">
+		WITH T AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY B.SRVC_REQUST_WR_DT DESC) AS NUM, B.* 
+        FROM (
+            SELECT  A.*, B.PRO_PROFL_PHOTO
+               FROM V_SRVC_REQUST A
+               LEFT JOIN V_PRO_USERS B
+               ON A.PRO_ID = B.PRO_ID
+            <choose>
+                <when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.MBER_ID=#{vSrvcRequstVO.userId}
+                    	AND A.SRVC_REQUST_PROCESS_AT = 0
+                </when>
+                <when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.PRO_ID=#{vSrvcRequstVO.userId}
+						AND A.SRVC_REQUST_PROCESS_AT = 0                
+                </when>
+            </choose>
+            <choose>
+                <when test="keyword != null and keyword != '' and selectColumn != 'ALL'">
+                    AND ${selectColumn} LIKE '%' || #{keyword} || '%'
+                </when>
+                <when test="keyword != null and keyword != '' and 'ALL'.equals(selectColumn)">
+                    AND (
+                        A.SRVC_REQUST_SJ LIKE '%' || #{keyword} || '%' OR 
+                        A.USER_NCNM LIKE '%' || #{keyword} || '%'
+                        )
+                </when>
+            </choose>
+	        ) B
+	    )
+	    SELECT T.* 
+	    FROM T
+	    WHERE T.NUM BETWEEN (#{currentPage}*#{size}) - (#{size} - 1) AND (#{currentPage}*#{size})
+	</select>
+	
+	<select id="srvcRqSuccessList" parameterType="map" resultType="vSrvcRequstVO">
+		WITH T AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY B.SRVC_REQUST_WR_DT DESC) AS NUM, B.* 
+        FROM (
+            SELECT  A.*, B.PRO_PROFL_PHOTO
+               FROM V_SRVC_REQUST A
+               LEFT JOIN V_PRO_USERS B
+               ON A.PRO_ID = B.PRO_ID
+            <choose>
+                <when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.MBER_ID=#{vSrvcRequstVO.userId}
+                	AND A.SRVC_REQUST_PROCESS_AT = 1
+                </when>
+                <when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.PRO_ID=#{vSrvcRequstVO.userId}
+                	AND A.SRVC_REQUST_PROCESS_AT = 1
+                </when>
+            </choose>
+            <choose>
+                <when test="keyword != null and keyword != '' and selectColumn != 'ALL'">
+                    AND ${selectColumn} LIKE '%' || #{keyword} || '%'
+                </when>
+                <when test="keyword != null and keyword != '' and 'ALL'.equals(selectColumn)">
+                    AND (
+                        A.SRVC_REQUST_SJ LIKE '%' || #{keyword} || '%' OR 
+                        A.USER_NCNM LIKE '%' || #{keyword} || '%'
+                        )
+                </when>
+            </choose>
+	        ) B
+	    )
+	    SELECT T.* 
+	    FROM T
+	    WHERE T.NUM BETWEEN (#{currentPage}*#{size}) - (#{size} - 1) AND (#{currentPage}*#{size})
+	</select>
+
+	<select id="srvcRqRejectList" parameterType="map" resultType="vSrvcRequstVO">
+		WITH T AS (
+        SELECT ROW_NUMBER() OVER (ORDER BY B.SRVC_REQUST_WR_DT DESC) AS NUM, B.* 
+        FROM (
+            SELECT A.* 
+            FROM V_SRVC_REQUST A
+            <choose>
+                <when test='"ET02".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.MBER_ID=#{vSrvcRequstVO.userId}
+                	AND A.SRVC_REQUST_PROCESS_AT = 2
+                </when>
+                <when test='"ET01".equals(vSrvcRequstVO.emplyrTy)'>
+                    WHERE A.emplyr_ty=#{vSrvcRequstVO.emplyrTy} AND A.PRO_ID=#{vSrvcRequstVO.userId}
+                	AND A.SRVC_REQUST_PROCESS_AT = 2
+                </when>
+            </choose>
+            <choose>
+                <when test="keyword != null and keyword != '' and selectColumn != 'ALL'">
+                    AND ${selectColumn} LIKE '%' || #{keyword} || '%'
+                </when>
+                <when test="keyword != null and keyword != '' and 'ALL'.equals(selectColumn)">
+                    AND (
+                        A.SRVC_REQUST_SJ LIKE '%' || #{keyword} || '%' OR 
+                        A.USER_NCNM LIKE '%' || #{keyword} || '%'
+                        )
+                </when>
+            </choose>
+        ) B
+    )
+    SELECT T.* 
+    FROM T
+    WHERE T.NUM BETWEEN (#{currentPage}*#{size}) - (#{size} - 1) AND (#{currentPage}*#{size})
+	</select>
+	
+	<select id="srvcRqDetail" parameterType="vSrvcRequstVO" resultMap="vSrvcRequstMap">
+		SELECT A.*, B.ATCHMNFL_NO, B.ATCHMNFL_COURS
+		FROM V_SRVC_REQUST A
+		LEFT JOIN SPRVISE_ATCHMNFL B
+		ON A.SPRVISE_ATCHMNFL_NO = B.SPRVISE_ATCHMNFL_NO
+		WHERE A.SRVC_REQUST_NO=#{srvcRequstNo} AND A.USER_ID = #{userId}
+	</select>
+	
+	<resultMap type="vSrvcRequstVO" id="vSrvcRequstMap">
+		<result property="srvcRequstNo" column="SRVC_REQUST_NO"/>
+		<result property="srvcRequstSj" column="SRVC_REQUST_SJ"/>
+		<result property="srvcRequstCn" column="SRVC_REQUST_CN"/>
+		<result property="srvcRequstWrDt" column="SRVC_REQUST_WR_DT"/>
+		<result property="mberId" column="MBER_ID"/>
+		<result property="proId" column="PRO_ID"/>
+		<result property="srvcRequstProcessAt" column="SRVC_REQUST_PROCESS_AT"/>
+		<result property="srvcRequstProcessMber" column="SRVC_REQUST_PROCESS_MBER"/>
+		<result property="srvcRequstProcessPro" column="SRVC_REQUST_PROCESS_PRO"/>
+		<result property="srvcRequstItyy" column="SRVC_REQUST_ITYY"/>
+		<result property="srvcRequstComptDt" column="SRVC_REQUST_COMPT_DT"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="userNcnm" column="USER_NCNM"/>
+		<result property="emplyrTy" column="EMPLYR_TY"/>	
+		<collection property="sprviseAtchmnflVOList" resultMap="sprviseAtchMap"></collection>
+	</resultMap>
+	
+	<resultMap type="sprviseAtchmnflVO" id="sprviseAtchMap">
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="atchmnflNo" column="ATCHMNFL_NO"/>
+		<result property="atchmnflCours" column="ATCHMNFL_COURS"/>
+		<result property="atchmnflNm" column="ATCHMNFL_NM"/>
+		<result property="storeAtchmnflNm" column="STORE_ATCHMNFL_NM"/>
+		<result property="atchmnflTy" column="ATCHMNFL_TY"/>
+		<result property="registDt" column="REGIST_DT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="updtDt" column="UPDT_DT"/>
+	</resultMap>
+	
+	<update id="processFn" parameterType="map">
+		UPDATE SRVC_REQUST SET ${processUser} = 1
+		<choose>
+			<when test='"ET02".equals(emplyrTy)'> 
+				WHERE MBER_ID=#{userId} AND SRVC_REQUST_NO = #{srvcRequstNo}
+ 			</when>
+			<when test='"ET01".equals(emplyrTy)'>
+				WHERE PRO_ID=#{userId} AND SRVC_REQUST_NO = #{srvcRequstNo}
+			</when>
+		</choose>
+	</update>
+	
+	<update id="acceptRequst" parameterType="map">
+		UPDATE SRVC_REQUST 
+		SET SRVC_REQUST_PROCESS_AT = 1, SRVC_REQUST_COMPT_DT = SYSDATE
+		WHERE SRVC_REQUST_NO = #{srvcRequstNo} AND PRO_ID=#{proId}
+	</update>
+
+	<update id="rejectRequst" parameterType="map">
+		UPDATE SRVC_REQUST 
+		SET SRVC_REQUST_PROCESS_AT = 2, SRVC_REQUST_ITYY=#{srvcRequstItyy}, SRVC_REQUST_COMPT_DT = SYSDATE
+		WHERE SRVC_REQUST_NO = #{srvcRequstNo} AND PRO_ID=#{proId}
+	</update>
+	
+	
+	<insert id="srvcRqCreatePost" parameterType="map">
+		INSERT INTO SRVC_REQUST(SRVC_REQUST_NO, SRVC_REQUST_SJ, SRVC_REQUST_CN, SRVC_REQUST_WR_DT, SPRVISE_ATCHMNFL_NO, MBER_ID, PRO_ID)
+		VALUES(SRVC_REQUST_NO_SEQ.NEXTVAL, #{srvcRequstSj}, #{srvcRequstCn}, SYSDATE, SPRVISE_ATCHMNFL_NO_SEQ.NEXTVAL, #{mberId}, #{proId})
+	</insert>
+	
+	<update id="srvcRqUpdatePost" parameterType="srvcRequstVO">
+		UPDATE SRVC_REQUST SET SRVC_REQUST_SJ = #{srvcRequstSj}, SRVC_REQUST_CN = #{srvcRequstCn} WHERE SRVC_REQUST_NO = #{srvcRequstNo}
+	</update>
+	
+	
+</mapper>

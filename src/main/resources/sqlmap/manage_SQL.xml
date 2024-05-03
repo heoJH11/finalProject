@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.manage.mapper.ManageMapper">
+
+	<sql id="where">
+		<if test="keyword!=null and keyword!=''">
+			AND (
+			USER_ID '%' || #{keyword} || '%'
+			)
+		</if>
+	</sql>
+	
+	<select id="test" resultType="dongChartVO">
+		SELECT  (SELECT COUNT(*) FROM PRO
+	            WHERE spclty_realm_code LIKE 'SR1%') AS pet,
+	        (SELECT COUNT(*) FROM PRO
+	            WHERE spclty_realm_code LIKE 'SR2%') AS sport,
+	        (SELECT COUNT(*) FROM PRO
+	            WHERE spclty_realm_code LIKE 'SR3%') AS music,
+	        (SELECT COUNT(*) FROM PRO
+	            WHERE spclty_realm_code LIKE 'SR4%') AS home,
+	        (SELECT COUNT(*) FROM PRO
+	            WHERE spclty_realm_code LIKE 'SR5%') AS hobby,
+	        (SELECT COUNT(*) FROM PRO
+	            WHERE spclty_realm_code LIKE 'SR6%') AS meet,
+	        (SELECT COUNT(*) FROM PRO
+	            WHERE spclty_realm_code LIKE 'SR7%') AS gita,
+	        (SELECT COUNT(*) FROM PRO) AS total
+		FROM DUAL
+	</select>
+	
+	<select id="test2" resultType="dongChartVO2">
+		select (
+			select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-01-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-01-31', 'YYYY-MM-DD')
+			                    ) as january,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-02-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-02-29', 'YYYY-MM-DD')
+			                    ) as february,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-03-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-03-31', 'YYYY-MM-DD')
+			                    ) as march,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-04-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-04-30', 'YYYY-MM-DD')
+			                    ) as april,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-05-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-05-31', 'YYYY-MM-DD')
+			                    ) as may,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-06-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-06-30', 'YYYY-MM-DD')
+			                    ) as june,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-07-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-07-31', 'YYYY-MM-DD')
+			                    ) as july,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-08-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-08-31', 'YYYY-MM-DD')
+			                    ) as august,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-09-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-09-30', 'YYYY-MM-DD')
+			                    ) as september,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-10-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-10-31', 'YYYY-MM-DD')
+			                    ) as october,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-11-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-11-30', 'YYYY-MM-DD')
+			                    ) as november,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-12-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-12-31', 'YYYY-MM-DD')
+			                    ) as december,
+			(select count(*) from SRVC_REQUST) as total
+		from dual
+	</select>
+	
+	<select id="test3" resultType="dongChartVO3">
+		select
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_PROCESS_AT = 0
+			and SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-01-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-12-31', 'YYYY-MM-DD')) as agree,
+			(select count(*) from SRVC_REQUST
+			where SRVC_REQUST_PROCESS_AT = 1
+			and SRVC_REQUST_WR_DT BETWEEN TO_DATE('2024-01-01', 'YYYY-MM-DD')
+			                    AND TO_DATE('2024-12-31', 'YYYY-MM-DD')) as refusal,
+			(select count(*) from SRVC_REQUST) as total
+		from dual
+	</select>
+	
+</mapper>

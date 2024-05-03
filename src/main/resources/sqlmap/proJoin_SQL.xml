@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro.join.mapper.ProJoinMapper">
+	<!-- 이메일 중복확인 -->
+	<select id="emailCk" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM MBER WHERE EMAIL=#{email}
+	</select>
+	
+	<!-- 아이디 중복확인 -->
+	<select id="idCk" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM USERS WHERE USER_ID=#{userId}
+	</select>
+	
+	<!-- 닉네임 중복확인 -->
+	<select id="ncnmCk" parameterType="String" resultType="int">
+		SELECT COUNT(*) FROM USERS WHERE USER_NCNM=#{userNcnm}
+	</select>
+	
+	<!-- 아이디 찾기 -->
+	<select id="idSearch" resultType="usersVO" parameterType="vProUsersVO">
+		SELECT USER_ID AS userId, EMPLYR_TY AS emplyrTy
+		FROM V_PRO_USERS
+		WHERE USER_NM=#{userNm}
+		AND EMAIL=#{email}
+	</select>
+	<select id="idSearch2" resultType="vMberUsersVO" parameterType="vProUsersVO">
+		SELECT USER_ID AS userId, EMPLYR_TY AS emplyrTy
+		FROM V_MBER_USERS
+		WHERE USER_NM=#{userNm}
+		AND EMAIL=#{email}
+	</select>
+	
+	<!-- 비밀번호 찾기 -->
+	<select id="pwSearch" resultType="usersVO" parameterType="vProUsersVO">
+		SELECT USER_PASSWORD AS userPassword, EMPLYR_TY AS emplyrTy
+		FROM V_PRO_USERS
+		WHERE PRO_ID=#{proId}
+		AND EMAIL=#{email}
+		AND PRO_MBTLNUM=#{proMbtlnum}
+	</select>
+	<select id="pwSearch2" resultType="String" parameterType="vProUsersVO">
+			SELECT EMPLYR_TY AS emplyrTy
+			FROM V_MBER_USERS
+			WHERE MBER_ID=#{proId}
+			AND EMAIL=#{email}
+		</select>
+	
+	<!-- 임시비밀번호 적용-->
+	<update id="updatePw" parameterType="hashMap">
+		UPDATE USERS
+		SET USER_PASSWORD=#{imsiPw},
+		CHANGE_PW_CK = 1
+		WHERE USER_ID=#{proId}
+	</update>
+	<!-- 관리자 로그인 -->
+<!-- 	<resultMap type="usersVO" id="usersAdminMap">
+		<result property="cnt" column="cnt"/>
+		<result property="emplyrTy" column="emplyrTy"/>
+		<result property="userNcnm" column="userNcnm"/>
+	</resultMap>
+	<select id="admLogin" parameterType="hashMap" resultMap="usersAdminMap">
+		SELECT USER_ID AS userId, COUNT(*) AS cnt, EMPLYR_TY AS emplyrTy, USER_NCNM AS userNcnm
+		FROM USERS
+		WHERE USER_ID=#{userId} AND USER_PASSWORD=#{userPassword}
+		GROUP BY EMPLYR_TY, USER_NCNM, USER_ID
+	</select> -->
+	
+	<!-- 관리자 ET03으로 불러오기 -->
+	<select id  ="adminVO" parameterType="String" resultType="usersVO">
+	SELECT USER_ID, USER_NM, USER_PASSWORD, EMPLYR_TY, SECSN_AT, USER_NCNM
+	  FROM users 
+	  WHERE USER_ID = #{userId}
+	</select>
+	
+	
+	<!-- 프로 로그인 -->
+	<resultMap type="usersVO" id="usersMap">
+		<result property="cnt" column="cnt"/>
+		<result property="emplyrTy" column="emplyrTy"/>
+		<result property="userNcnm" column="userNcnm"/>
+		<result property="changePwCk" column="CHANGE_PW_CK"/>
+	</resultMap>
+	
+	<select id="proLogin" parameterType="hashMap" resultMap="usersMap">
+		SELECT USER_ID AS userId, COUNT(*) AS cnt, EMPLYR_TY AS emplyrTy, USER_NCNM AS userNcnm, CHANGE_PW_CK
+		FROM USERS
+		WHERE USER_ID=#{userId} AND USER_PASSWORD=#{userPassword}
+		GROUP BY EMPLYR_TY, USER_NCNM, USER_ID, CHANGE_PW_CK
+	</select>
+	
+	<select id="getAdres" parameterType="hashMap" resultType="adresVO">
+			SELECT ADRES, DETAIL_ADRES, ZIP
+			FROM ADRES WHERE USER_ID = #{userId}
+		</select>
+	
+	<!-- 프로필 사진 출력 -->
+	<select id="getProfile" parameterType="hashMap" resultType="vProUsersVO">
+		SELECT PRO_ID, PRO_MBTLNUM, SEXDSTN_TY, EMAIL, USER_NM, SPCLTY_REALM_CODE, USER_PASSWORD, EMPLYR_TY, SECSN_AT, USER_NCNM, USER_ID, PRO_PROFL_PHOTO
+		FROM V_PRO_USERS
+		WHERE PRO_ID = #{userId}
+	</select>
+	
+	<!-- 프로 회원가입 -->
+	<insert id="proInsert" parameterType="hashMap">
+		INSERT ALL
+		    INTO USERS(USER_ID, USER_NM, USER_PASSWORD, EMPLYR_TY,USER_NCNM)
+		    VALUES(#{userId},#{userNm},#{userPassword},'ET02',#{userNcnm})
+		    <if test="proProflPhoto != null">
+		    INTO PRO(PRO_ID, PRO_MBTLNUM, SEXDSTN_TY, EMAIL, PRO_PROFL_PHOTO, SPCLTY_REALM_CODE)
+		    VALUES(#{userId},#{proMbtlnum},#{sexdstnTy},#{email},#{proProflPhoto},#{spcltyRealmCode})
+		    </if>
+		    <if test="proProflPhoto == null">
+		    INTO PRO(PRO_ID, PRO_MBTLNUM, SEXDSTN_TY, EMAIL, SPCLTY_REALM_CODE)
+		    VALUES(#{userId},#{proMbtlnum},#{sexdstnTy},#{email},#{spcltyRealmCode})
+		    </if>
+		    
+		    INTO AUTHOR(AUTHOR, USER_ID)
+		    VALUES('ET02',#{userId})
+		    
+		    INTO ADRES(USER_ID, ADRES_NO, ADRES, DETAIL_ADRES, ZIP)
+		    VALUES(#{userId},ADRES_SEQ.NEXTVAL,#{adres},#{detailAdres},#{zip})
+		SELECT * FROM DUAL
+	</insert>
+	<!-- 하위 전문분야 출력 -->
+	<resultMap type="spcltyRealmVO" id="downCodeMap">
+		<result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+		<result property="spcltyRealmNm" column="SPCLTY_REALM_NM"/>
+		<result property="ptprtSpcltyRealmCode" column="PTPRT_SPCLTY_REALM_CODE"/>
+	</resultMap>
+	<select id="codeSelect" parameterType="String" resultMap="downCodeMap">
+		SELECT SPCLTY_REALM_CODE, SPCLTY_REALM_NM, PTPRT_SPCLTY_REALM_CODE
+		FROM SPCLTY_REALM
+		WHERE PTPRT_SPCLTY_REALM_CODE = #{code}
+	</select>
+	
+	<!-- 회원가입시 전문분야 출력 -->
+	<resultMap type="spcltyRealmVO" id="codeMap">
+		<result property="lev" column="lev"/>
+		<result property="spcltyRealmCode" column="spcltyRealmCode"/>
+		<result property="spcltyRealmNm" column="spcltyRealmNm"/>
+		<result property="ptprtSpcltyRealmCode" column="ptprtSpcltyRealmCode"/>
+	</resultMap>
+	<select id="selectCode" resultMap="codeMap">
+		SELECT 
+		    LEVEL AS lev
+		    , SPCLTY_REALM_CODE AS spcltyRealmCode
+		    , SPCLTY_REALM_NM AS spcltyRealmNm
+		    , PTPRT_SPCLTY_REALM_CODE AS ptprtSpcltyRealmCode
+		FROM SPCLTY_REALM
+		START WITH PTPRT_SPCLTY_REALM_CODE IS NULL
+		CONNECT BY PTPRT_SPCLTY_REALM_CODE = PRIOR SPCLTY_REALM_CODE
+		ORDER SIBLINGS BY SPCLTY_REALM_CODE
+	</select>
+	
+	<!-- 프로 마이페이지 전문분야 출력 -->
+	<select id="proSRCode" parameterType="String" resultType="String">
+		SELECT SPCLTY_REALM_NM
+		FROM SPCLTY_REALM
+		WHERE SPCLTY_REALM_CODE = #{spcltyRealmCode}
+	</select>
+	
+	<!-- 프로 제재종료일 불러오기 -->
+	<select id="getUserEndDt" parameterType="string" resultType="Date">
+		select nvl(max(PUNSH_END_DE),sysdate-1) from PUNSH
+		where user_id = #{userId}
+	</select>
+	
+</mapper>

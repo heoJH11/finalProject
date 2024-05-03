@@ -1,0 +1,260 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.board.pro_story.mapper.ProStoryMapper">
+	<!-- 게시글 번호(자동증가 , sequence)		proStoryBbscttNo	 -->
+	<!-- 게시글 제목(직접입력)					proStoryBbscttSj -->
+	<!-- 게시글 내용(직접입력)					proStoryBbscttCn -->
+	<!-- 게시글 작성일자(sysdate)			    proStoryBbscttWrDt -->
+	<!-- 게시글 추천수(별도)					proStoryBbscttRecommend -->
+	<!-- 게시글 조회수(별도)					proStoryBbscttRdcnt -->
+	<!-- 프로이야기게시글썸네일사진(직접입력)		proStoryBbscttThumbPhoto -->
+	<!-- 통합첨부파일(사진, 직접등록)			sprviceAtchmnflNo -->
+	<!-- 프로아이디							proId -->
+	<!-- 	<sql id="where"> -->
+	<!-- 		<if test="keyword!=null and keyword!=''"> -->
+	<!-- 		AND    ( -->
+	<!-- 				A.PRO_STORY_BBSCTT_NO LIKE '%' || #{keyword} || '%' -->
+	<!-- 			OR  A.PRO_STORY_BBSCTT_SJ LIKE '%' || #{keyword} || '%' -->
+	<!-- 		) -->
+	<!-- 		</if> -->
+	<!-- 	</sql> -->
+	
+	<select id="storyList" resultType="proStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper storyList 프로스토리 리스트 */
+		SELECT
+				  PRO_STORY_BBSCTT_NO
+				, PRO_STORY_BBSCTT_SJ
+				, TO_CHAR(PRO_STORY_BBSCTT_WR_DT , 'YYYY.MM.DD HH24:MI:SS') AS PRO_STORY_BBSCTT_WR_DT
+				, PRO_STORY_BBSCTT_RECOMMEND
+				, PRO_STORY_BBSCTT_RDCNT
+				, PRO_STORY_BBSCTT_THUMB_PHOTO
+				, PRO_ID
+		FROM 	  PRO_STORY_BBSCTT
+		ORDER BY  PRO_STORY_BBSCTT_NO
+	</select>
+	
+	<select id="getStory" parameterType="int" resultType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper getStory 프로스토리 특정글 */
+			SELECT 
+				    	ROW_NUMBER() OVER (ORDER BY A.PRO_STORY_BBSCTT_WR_DT DESC) AS ROW_NUM
+				    , A.PRO_STORY_BBSCTT_NO AS proStoryBbscttNo
+				    , A.PRO_STORY_BBSCTT_SJ AS proStoryBbscttSj
+				    , A.PRO_STORY_BBSCTT_CN AS proStoryBbscttCn
+				    , TO_CHAR(A.PRO_STORY_BBSCTT_WR_DT, 'YYYY.MM.DD HH24:MI:SS') AS proStoryBbscttWrDt
+				    , A.PRO_STORY_BBSCTT_RECOMMEND AS proStoryBbscttRecommend
+				    , A.PRO_STORY_BBSCTT_RDCNT AS proStoryBbscttRdcnt
+				    , A.PRO_STORY_BBSCTT_THUMB_PHOTO AS proStoryBbscttThumbPhoto
+				    , A.PRO_ID AS proId
+	                , B.USER_ID AS userId
+	                , B.USER_NM AS userNm
+	                , B.SECSN_AT AS secsnAt
+	                , B.EMPLYR_TY AS emplyrTy
+	                , B.USER_NCNM AS userNcnm
+	                , C.PRO_MBTLNUM AS proMbtlnum
+	                , C.SEXDSTN_TY AS sexdstnTy
+	                , C.EMAIL AS email
+	                , C.PRO_PROFL_PHOTO AS proProflPhoto
+	                , D.SPCLTY_REALM_CODE AS spcltyRealmCode
+	                , D.SPCLTY_REALM_NM AS spcltyRealmNm
+	                , D.PTPRT_SPCLTY_REALM_CODE AS spcltyRealmCodeBase
+	      	  FROM
+	      			PRO_STORY_BBSCTT A , USERS B , PRO C , SPCLTY_REALM D
+	         WHERE  1 = 1
+	           AND  A.PRO_ID = B.USER_ID
+	           AND  C.PRO_ID = B.USER_ID
+	           AND  A.PRO_ID = C.PRO_ID
+	           AND  C.SPCLTY_REALM_CODE = D.SPCLTY_REALM_CODE
+			   AND  PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	</select>
+	
+	<select id="getPage" parameterType="java.util.Map" resultType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper getPage 프로스토리 페이징 */
+	SELECT T.* 
+			FROM (
+					SELECT 
+				              ROW_NUMBER() OVER (ORDER BY A.PRO_STORY_BBSCTT_WR_DT DESC) AS ROW_NUM
+				            , A.PRO_STORY_BBSCTT_NO AS proStoryBbscttNo
+				            , A.PRO_STORY_BBSCTT_SJ AS proStoryBbscttSj
+				            , A.PRO_STORY_BBSCTT_CN AS proStoryBbscttCn
+				            , TO_CHAR(A.PRO_STORY_BBSCTT_WR_DT, 'YYYY.MM.DD HH24:MI:SS') AS proStoryBbscttWrDt
+				            , A.PRO_STORY_BBSCTT_RECOMMEND AS proStoryBbscttRecommend
+				            , A.PRO_STORY_BBSCTT_RDCNT AS proStoryBbscttRdcnt
+				            , A.PRO_STORY_BBSCTT_THUMB_PHOTO AS proStoryBbscttThumbPhoto
+				            , A.PRO_ID AS proId
+	                        , B.USER_ID AS userId
+	                        , B.USER_NM AS userNm
+	                        , B.EMPLYR_TY AS emplyrTy
+	                        , B.SECSN_AT AS secsnAt
+	                        , B.USER_NCNM AS userNcnm
+	                        , C.PRO_MBTLNUM AS proMbtlnum
+	                        , C.SEXDSTN_TY AS sexdstnTy
+	                        , C.EMAIL AS email
+	                        , C.PRO_PROFL_PHOTO AS proProflPhoto
+	                        , C.SPCLTY_REALM_CODE AS spcltyRealmCode
+			      	 FROM	
+			      			PRO_STORY_BBSCTT A , USERS B , PRO C
+		            WHERE   1 = 1
+		              AND   A.PRO_ID = B.USER_ID
+	                  AND   C.PRO_ID = B.USER_ID
+	                  AND   A.PRO_ID = C.PRO_ID
+	                   <include refid="where"></include>
+	                  ) T
+			WHERE T.ROW_NUM BETWEEN (#{currentPage} * 8) - (8 - 1) AND (#{currentPage} * 8)
+	</select>
+	
+	<sql id="where">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper 검색 조건문 */
+	<choose>
+	    <when test ="type!=null and type!='' and type.equals('제목')">
+	     AND A.PRO_STORY_BBSCTT_SJ LIKE '%' || #{keyword} || '%'
+	    </when>
+	    <when test ="type!=null and type!='' and type.equals('내용')">
+	     AND A.PRO_STORY_BBSCTT_CN LIKE '%' || #{keyword} || '%'
+	    </when>
+	    <when test ="type!=null and type!='' and type.equals('작성자')">
+	     AND B.USER_ID LIKE '%' || #{keyword} || '%'
+	    </when>
+	    <otherwise>
+	     AND A.PRO_STORY_BBSCTT_SJ LIKE '%' || #{keyword} || '%'
+	    </otherwise>
+	</choose>
+	</sql>
+	
+	<select id="getWeekRecommend" resultType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper getWeekRecommend 최근 일주일 내 추천수 상위 4개 가져오기 */
+	   <![CDATA[ 
+	    SELECT *
+		         FROM (
+				           SELECT
+				                  	A.PRO_STORY_BBSCTT_NO
+				                  , A.PRO_STORY_BBSCTT_SJ
+				                  , TO_CHAR(A.PRO_STORY_BBSCTT_WR_DT, 'YYYY.MM.DD HH24:MI:SS')
+				                  , A.PRO_STORY_BBSCTT_RECOMMEND
+				                  , A.PRO_STORY_BBSCTT_RDCNT
+				                  , A.PRO_STORY_BBSCTT_THUMB_PHOTO
+				                  , A.SPRVISE_ATCHMNFL_NO
+				                  , A.PRO_ID
+				                  , B.USER_NM
+				                  , B.USER_NCNM
+				             FROM PRO_STORY_BBSCTT A , USERS B
+				            WHERE 1 = 1
+	                          AND A.PRO_ID = B.USER_ID
+	                          AND PRO_STORY_BBSCTT_WR_DT >= SYSDATE - 7
+				            ORDER BY PRO_STORY_BBSCTT_RECOMMEND DESC
+				       )
+		  	WHERE ROWNUM <= 4
+	   ]]>
+	</select>
+	
+	<select id="getTotal" resultType="int">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper getTotalPages 토탈글수 */
+		
+		SELECT COUNT(*)
+		
+		  FROM PRO_STORY_BBSCTT
+	    
+	     WHERE 1 = 1
+	     
+	</select>
+
+	<select id="getGoodCheck" parameterType="java.util.Map" resultType="int">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper getGoodCheck 좋아요 체크 */
+		
+		SELECT COUNT(*)
+		
+		  FROM GOODPOINT
+		
+		 WHERE 1 = 1
+		   AND pro_story_bbsctt_no = #{proStoryBbscttNo}
+		   AND USER_ID = #{userId}
+	</select>
+	
+	<insert id="insert" parameterType="proStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper insert 게시글 등록 */
+		INSERT INTO
+					PRO_STORY_BBSCTT(
+										PRO_STORY_BBSCTT_NO
+									  , PRO_STORY_BBSCTT_SJ
+									  , PRO_STORY_BBSCTT_CN
+									  , PRO_STORY_BBSCTT_WR_DT
+									  , PRO_STORY_BBSCTT_THUMB_PHOTO
+									  , PRO_ID
+					  				)
+							VALUES(
+									PRO_STORY_BBSCTT_NO_SEQ.NEXTVAL
+							 	  ,	#{proStoryBbscttSj}
+							 	  ,	#{proStoryBbscttCn}
+							 	  , SYSDATE
+							 	  , #{proStoryBbscttThumbPhoto}
+							 	  , #{proId}
+							 	  	)
+	</insert>
+	
+	<update id="updateStory" parameterType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper updateStory 게시글 수정 */
+	 UPDATE   PRO_STORY_BBSCTT
+	
+	 	SET   PRO_STORY_BBSCTT_SJ = #{proStoryBbscttSj}
+	 		, PRO_STORY_BBSCTT_CN = #{proStoryBbscttCn}
+	 		, PRO_STORY_BBSCTT_WR_DT = SYSDATE
+	 		, PRO_STORY_BBSCTT_THUMB_PHOTO = #{proStoryBbscttThumbPhoto}
+	  WHERE	PRO_ID = #{proId} AND PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	
+	</update>
+	
+	<delete id="deleteStory">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper deleteStory 게시글 삭제 */
+		DELETE FROM PRO_STORY_BBSCTT
+	     WHERE PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	       AND PRO_ID = #{proId}
+	</delete>
+	
+	<update id="getStoryCount" parameterType="int">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper getStoryCount 조회수 증가 */
+		
+		UPDATE PRO_STORY_BBSCTT
+		   SET PRO_STORY_BBSCTT_RDCNT = PRO_STORY_BBSCTT_RDCNT + 1
+		
+		 WHERE PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	</update>
+	
+	<!-- 좋아요 추가 -->
+	<insert id="goodSave" parameterType="kr.or.ddit.board.pro_story.vo.GoodPointVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper goodSave 좋아요 추가시 */
+	    INSERT INTO GOODPOINT
+	    VALUES(GOOD_SEQ.NEXTVAL, #{proStoryBbscttNo}, #{userId})
+	</insert>
+	
+	<update id="goodUp" parameterType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper updateGood 좋아요 추가시 게시글 반영 */
+	
+		UPDATE PRO_STORY_BBSCTT
+		   SET PRO_STORY_BBSCTT_RECOMMEND = PRO_STORY_BBSCTT_RECOMMEND + 1
+		 WHERE PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	</update>
+	
+	<!-- 좋아요 삭제 -->
+	<delete id="goodRemove" parameterType="kr.or.ddit.board.pro_story.vo.GoodPointVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper removeGood 좋아요 삭제시 */
+	
+	    DELETE FROM GOODPOINT
+	     WHERE PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	       AND USER_ID=#{userId}
+	</delete>
+	<update id="goodDown" parameterType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper updateGoodCancle 좋아요 삭제시 게시글 반영 */
+	
+		UPDATE PRO_STORY_BBSCTT
+		   SET PRO_STORY_BBSCTT_RECOMMEND = PRO_STORY_BBSCTT_RECOMMEND - 1
+		 WHERE PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	</update>
+	
+	<select id="goodCount" parameterType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO" resultType="kr.or.ddit.board.pro_story.vo.ProStoryBbscttVO">
+	/** package kr.or.ddit.board.pro_story.mapper.ProStoryMapper GoodCount 좋아요 추가/삭제시 반영된 좋아요 개수 가져오기 */
+	
+		SELECT PRO_STORY_BBSCTT_RECOMMEND
+		  FROM PRO_STORY_BBSCTT
+		 WHERE PRO_STORY_BBSCTT_NO = #{proStoryBbscttNo}
+	</select>
+
+</mapper>

@@ -1,0 +1,56 @@
+/* 백설기 프로필 */
+.screen-header__icons .fa-2x {
+  padding-left: 20px;
+}
+.account__inf {
+  width: 100vw;
+  height: 400px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding-bottom: 30px;
+}
+
+.account__inf .name {
+  font-size: 35px;
+  padding: 20px 0px;
+}
+
+@keyframes apearAccountBtn {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+.account__btn {
+  height: 100%;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  border-top: 2px solid rgba(0, 0, 0, 0.4);
+  padding: 44px 65px;
+  background-color: rgba(222, 184, 135, 0.555);
+}
+.account__btn__icons {
+  will-change: transform;
+  animation: apearAccountBtn 1s ease-in-out forwards;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.account__btn__icons i {
+  margin-bottom: 30px;
+}
+
+.account__inf img {
+  width: 100px;
+  height: 100px;
+  border-radius: 35%;
+  background-color: var(--main-color);
+}
