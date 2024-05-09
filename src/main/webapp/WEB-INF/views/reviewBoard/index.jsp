@@ -8,15 +8,14 @@
     font-style: normal;
 }
 
- /* 모달창 먹통 이슈 (은진 수정 가능) */
+ /* 모달창 먹통 이슈  */
 .modal-backdrop {
     z-index: 0;
     background-color: #ffffff;
 }
     
 
-/* 주희 추가 
- 커서 손꾸락으로 바꿈 */
+/* 주희 추가  */
 tbody {
 	cursor: pointer;
 }
@@ -168,13 +167,9 @@ $(function () {
 		            console.log(result);
 
 		            reviewList(result);
-	        	}
-	        	
-	        	
+	        	}	
 	        }
 	    })
-
-
 	})
 
 	//등록 버튼 클릭시 서비스 요청 완료 목록 출력 모달
@@ -231,7 +226,6 @@ $(function () {
 		searchList();
 	})
 	
-	
 	//전체 리스트 출력
 	
 	let currentPage = "${param.currentPage}";
@@ -268,7 +262,6 @@ function reviewList(result) {
 	let str = "";
 	$.each(result.content, function(idx, aftusBbscttVO) {
 		let mberPhoto = aftusBbscttVO.mberProflPhoto;
-		console.log("프사", mberPhoto);
 		str += `<tr onclick="location.href='/reviewBoard/detail?aftusBbscttNo=\${aftusBbscttVO.aftusBbscttNo}'">`;
 		str += `<td>\${aftusBbscttVO.rnum}</td>`;
 		str += `<td>\${aftusBbscttVO.aftusBbscttSj}</td>`;

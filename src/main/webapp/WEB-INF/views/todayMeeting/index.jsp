@@ -21,12 +21,10 @@ https://cdn.jsdelivr.net/npm/fullcalendar@4.0.0-alpha.4/dist/fullcalendar.min.cs
     font-style: normal;
 }
 
-/* 주희 추가 
- 커서 손꾸락으로 바꿈 */
+/* 주희 추가  */
 tbody {
 	cursor: pointer;
 }
-
 
 .searchForm {
 	margin-top: 30px;
@@ -79,7 +77,7 @@ $(function () {
         $(".tmtCalTab").css("display", "block");
     }
 
-    
+    //검색
     $(".tmtDrop").click(function() {
         var selectedText = $(this).text();
         $("#dropdownMenuSizeButton3").text(selectedText);
@@ -160,8 +158,9 @@ $(function () {
 		$("#modal-calendar").modal("hide");
 	})
     
+	//캘린더
     $("#tmtCalTab").on("click", function () {
-    //캘린더
+
 	    var request = $.ajax({
 	        url: "/todayMeeting/calendarList", // 값 불러오기
 	        data: {"userId" : userId},
@@ -170,7 +169,7 @@ $(function () {
 	    });
 	    request.done(function (data) {
 	    	$("#calendar").html("");
-	        console.log(data); // log로 데이터 찍어주기
+	        console.log(data);
 	        var calendarEl = document.getElementById('calendar');
 	        calendar = new FullCalendar.Calendar(calendarEl, {
 	            height: '700px',
@@ -190,15 +189,12 @@ $(function () {
 	            events: data,
 	            locale: 'ko', // 한국어 설정
 	
-	            eventClick: function (info) {
-		
+	            eventClick: function (info) {		
 	            	$("#modal-calendar").modal("show");
 	            	
 	            	var tdmtngNo = info.event.id;
 	            	
-					location.href = "/todayMeeting/detail?tdmtngNo=" + tdmtngNo;
-	       
-	          
+					location.href = "/todayMeeting/detail?tdmtngNo=" + tdmtngNo;  
 	            }
 	
 	        });
@@ -256,9 +252,6 @@ function meetingList (result) {
     $.each(result.content, function (idx, tdmtngVO) {
     	let mberPhoto = tdmtngVO.mberProflPhoto;
     	let proPhoto = tdmtngVO.proProflPhoto;
-    	
-		console.log("회원프사", mberPhoto);
-		console.log("프로프사", proPhoto);
     	
 		str += `<tr onclick="location.href='/todayMeeting/detail?tdmtngNo=\${tdmtngVO.tdmtngNo}'">`;
 		str += `<td>\${tdmtngVO.rnum}</td>`;

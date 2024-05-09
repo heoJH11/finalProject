@@ -117,10 +117,6 @@ $(function() {
 		});
                 $(".tyn-quick-chat").addClass("active");
  	})
-// 	window.onload = function(){
-		
-// 			$(".tyn-quick-chat").addClass("active");
-// 	}
  	
  	$("#btnTmtInsertCen").on("click", function (){
  		location.href = "/todayMeeting/main";
@@ -189,15 +185,12 @@ $(function() {
 					})
 				return;
 			}
-			//이미지 객체를 읽을 자바스크립트의 reader 객체 생성
 			let reader = new FileReader();
 			
 			$(".clsCiImgUrl").html("");
 			
-			//e : reader가 이미지 객체를 읽는 이벤트
 			reader.onload = function(e){
-
-				
+			
 				$(".clsCiImgUrl").css({
 			          "background-image": "url(" + e.target.result + ")",
 			          "background-position": "center",
@@ -205,10 +198,8 @@ $(function() {
 			          "width": "500px", 
 			          "height": "500px",
 		
-			    });
-// 				
+			    });			
 			}
-			//f : 이미지 파일 객체를 읽은 후 다음 이미지 파일(f)을 위해 초기화 함
 			reader.readAsDataURL(f);
 		});
 	}

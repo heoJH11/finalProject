@@ -98,9 +98,7 @@ public class ReviewBoardServiceImpl implements ReviewBoardService {
 		long size = 0;
 		//MIME타입
 		String mime = "";
-		//sql 성공한 행의 수
-				
-		
+
 		result = this.reviewBoardMapper.update(aftusBbscttVO);
 		
 		String userId = aftusBbscttVO.getUserId();
@@ -124,18 +122,11 @@ public class ReviewBoardServiceImpl implements ReviewBoardService {
 			UUID uuid = UUID.randomUUID();
 			uploadFileName = uuid.toString() + "_" + originalFilename;
 			
-			//File 객체 설계 (어디로 복사할 것인지? 경로)
-//			File saveFile = new File(uploadDirect + "\\" + getFolder(), uploadFileName);
-			
-			
 			File uploadPath = new File(uploadFolder, getFolder());
 			File saveFile = new File(uploadPath, uploadFileName);
 			try {
 			     
 				multipartFile.transferTo(saveFile);
-				
-				//ATTACH테이블에 insert
-//				sprviseAtchmnflVO.setAtchmnflNo(atchmnflNo++);
 				
 				sprviseAtchmnflVO.setAtchmnflCours("/images/" + getFolder().replace("\\", "/") + "/"
 						+ uploadFileName);  
@@ -158,11 +149,6 @@ public class ReviewBoardServiceImpl implements ReviewBoardService {
 					log.error(e.getMessage());
 				}
 			}
-		/*
-		 * log.info("insert : " + aftusBbscttVO); if
-		 * (aftusBbscttVO.getUploadFile().length != 0) { log.info("이미지파일 처리하러~" +
-		 * aftusBbscttVO.getUploadFile().length); fileUpload(aftusBbscttVO); }
-		 */
 		}
 		return result;		
 	}
@@ -183,15 +169,11 @@ public class ReviewBoardServiceImpl implements ReviewBoardService {
 		return this.reviewBoardMapper.fileDel(sprviseAtchmnflVO);
 	}
 
-	
-	
-
 	@Override
 	public int createAjax(AftusBbscttVO aftusBbscttVO) {
 		int result = 0;
-		//파일을 올리든 안 올리든 sprviseAtchmnflNo=0으로 vo에 담겨서
-		//db에 파일이 없어도 nextval 되어 데이터가 추가되는 이슈
-		//uploadFile이 없을 경우 처리를 해줌
+		
+		//uploadFile이 없을 경우 처리
 		MultipartFile[] uploadFile = aftusBbscttVO.getUploadFile();
 		log.info("uploadFile : " + uploadFile);
 		if(uploadFile == null || uploadFile.length == 0 || uploadFile[0].isEmpty()) {	
@@ -207,11 +189,7 @@ public class ReviewBoardServiceImpl implements ReviewBoardService {
 		long size = 0;
 		//MIME타입
 		String mime = "";
-		//sql 성공한 행의 수
-				
-				
-//		int result = this.reviewBoardMapper.createAjax(aftusBbscttVO);
-		
+
 		int atchmnflNo = 1;
 		
 		String userId = aftusBbscttVO.getUserId();
@@ -265,12 +243,6 @@ public class ReviewBoardServiceImpl implements ReviewBoardService {
 					log.error(e.getMessage());
 				}
 			}
-
-		/*
-		 * log.info("insert : " + aftusBbscttVO); if
-		 * (aftusBbscttVO.getUploadFile().length != 0) { log.info("이미지파일 처리하러~" +
-		 * aftusBbscttVO.getUploadFile().length); fileUpload(aftusBbscttVO); }
-		 */
 		}
 
 		return result;

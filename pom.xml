@@ -14,34 +14,7 @@
 		<org.slf4j-version>1.6.6</org.slf4j-version>
   		<project.build.sourceEncoding>utf-8</project.build.sourceEncoding>
 	</properties>
-	<dependencies>
-		<!-- Spring -->
-		<!-- 스프링 시큐리티 시작 우선 주석처리, 나중에 활성화 -->
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.security</groupId> -->
-<!-- 			<artifactId>spring-security-web</artifactId> -->
-<!-- 			<version>5.0.7.RELEASE</version> -->
-<!-- 		</dependency> -->
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.security</groupId> -->
-<!-- 			<artifactId>spring-security-config</artifactId> -->
-<!-- 			<version>5.0.7.RELEASE</version> -->
-<!-- 		</dependency> -->
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.security</groupId> -->
-<!-- 			<artifactId>spring-security-core</artifactId> -->
-<!-- 			<version>5.0.7.RELEASE</version> -->
-<!-- 		</dependency> -->
-
-<!-- 		<dependency> -->
-<!-- 			<groupId>org.springframework.security</groupId> -->
-<!-- 			<artifactId>spring-security-taglibs</artifactId> -->
-<!-- 			<version>5.0.7.RELEASE</version> -->
-<!-- 		</dependency> -->
-		<!-- 스프링 시큐리티 끝 우선 주석처리, 나중에 활성화 -->
-		
+	<dependencies>		
 		<!-- json 관련 라이브러리 시작 -->
 		<dependency>
 			<groupId>com.google.code.gson</groupId>

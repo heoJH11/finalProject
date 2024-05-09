@@ -50,29 +50,11 @@
 		<property name="maxUploadSize" value="10485760"/>
 		<property name="defaultEncoding" value="UTF-8" />
 	</bean>
-	<!-- =====================ckeditor 동균 추가====================== -->
-<!-- 	<bean id="uploadFolder1" class="java.lang.String"> -->
-<!-- 		<constructor-arg value="C:\\eGovFrameDev-3.10.0-64bit\\workspace\\finalProject2\\src\\main\\webapp\\resources\\upload"></constructor-arg> -->
-<!-- 	</bean> -->
-	
+
 	<bean id="uploadFolderDirect" class="java.lang.String">
-		<constructor-arg value="C:\\eGovFrameDev-3.10.0-64bit\\workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\finalProject\\resources\\ckFolder"></constructor-arg>
+		<constructor-arg value="D:\\develop\\eGovFrameDev-3.10.0-64bit\\workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\finalProject\\resources\\ckFolder"></constructor-arg>
 	</bean>
 	
-	<!-- =====================ckeditor 동균 추가 끝====================== -->
-	
-<!-- 	 주희 추가 -->
-<!-- 	<bean id="uploadDirect" class="java.lang.String"> -->
-<!-- 		<constructor-arg value="C:\\eGovFrameDev-3.10.0-64bit\\workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\myFinalProject\\resources\\upload"></constructor-arg> -->
-<!-- 	</bean>	 -->
-	
-	<!-- 재훈 추가 ============================================================= -->
-<!--  	<bean id="uploadDirectCk" class="java.lang.String"> -->
-<!--  		<constructor-arg value="C:\\finalProj\\workspace\\.metadata\\.plugins\\org.eclipse.wst.server.core\\tmp0\\wtpwebapps\\finalProject\\resources\\ckFolder"></constructor-arg> -->
-<!--  	</bean> -->
-	<!-- 재훈 추가 ============================================================= -->
-
-			
 	<!-- 이메일 관련 빈 등록 -->
 	<bean id="mailSender" class="org.springframework.mail.javamail.JavaMailSenderImpl">
 		<property name="host" value="smtp.gmail.com"></property>

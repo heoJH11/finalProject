@@ -6,7 +6,6 @@
 <link rel="stylesheet" href="/resources/skydash/vendors/font-awesome/css/font-awesome.min.css">
 <link rel="stylesheet" href="/resources/skydash/vendors/mdi/css/materialdesignicons.min.css">
 <style>
-
 	.ck-editor__editable_inline {
 		min-height: 500px;
 	}
@@ -170,9 +169,7 @@
 							}).then((result) => {
 								location.href = "/reviewBoard/main";
 							})
-
 						}
-
 					})
 				}
 			})
@@ -219,7 +216,6 @@
 
 		//댓글 등록
 		$("#ansInt").on("click", function () {
-			console.log("하요");
 
 			let userId = `${sessionId}`;
 
@@ -322,29 +318,21 @@ function listAns() {
 
 				let mberPhoto = aftusBbscttAnswerVO.mberProflPhoto;
 				let proPhoto = aftusBbscttAnswerVO.proProflPhoto;
-				console.log("회원 사진? ", mberPhoto);
-				console.log("프로 사진? ", proPhoto);
 				
 				str += `
                			<div class="d-flex align-items-start profile-feed-item" style="justify-content: space-between;">
                				<div class="d-flex align-items-start" style="width: 100%;">
  						`
 				if (proPhoto == null && mberPhoto != null) {
-					console.log("회원 사진을 로딩해봐라!!");
-
 					str += `<img src = "\${mberPhoto}"
 									id = "usersPhoto" class="img-sm rounded-circle">
 									`
 				} else if (proPhoto != null && mberPhoto == null) {
-					console.log("프로 사진 가져와");
-
 					str += `<img src = "\${proPhoto}" 
 									id = "usersPhoto" class="img-sm rounded-circle">
                						`
 				} else {
-					console.log("가만 있어!!");
 					str += `<img src='/images/2024/profile.jpg' class="img-sm rounded-circle">
-           							`
 				}
 				str += `
 						<div class="ms-4" style="margin-left: 20px; width: 100%;">
@@ -432,14 +420,11 @@ function listAns() {
 	});
 }
 
-
-
 //대댓글 등록
 function ansAnsInt(no) {
 	console.log(no);
 	$("#ansInt2" + no).hide();
 	$("#ansAns" + no).show();
-	console.log("왔나");
 
 	let aftusBbscttAnswerCn = $("#aftusBbscttAnswerCn2" + no).val();
 
@@ -478,14 +463,11 @@ function cnsInt(no) {
 
 };
 
-
 //대댓글 보기
 function ansAnsViewBtn(no) {
-	console.log("대댓글 보러 왔다")
 	console.log(no);
 
 	if (userId == null || userId == "") {
-		console.log("없다 이자식아");
 
 		$("#aftusBbscttAnswerCn2" + no).attr("placeholder", "로그인을 해주세요..");
 		$("#ansInt3" + no).attr("readonly", "true");
@@ -529,21 +511,15 @@ function ansAnsViewBtn(no) {
 									<div class="d-flex align-items-start" style="width: 100%;">
 							`
 					if (proPhoto == null && mberPhoto != null) {
-					console.log("회원 사진을 로딩해봐라!!");
-
 					str += `<img src = "\${mberPhoto}"
 									id = "usersPhoto" class="img-sm rounded-circle">
 									`
 				} else if (proPhoto != null && mberPhoto == null) {
-					console.log("프로 사진 가져와");
-
 					str += `<img src = "\${proPhoto}" 
 									id = "usersPhoto" class="img-sm rounded-circle">
              						`
 				} else {
-					console.log("가만 있어!!");
 					str += `<img src='/images/2024/profile.jpg' class="img-sm rounded-circle">
-         							`
 				}
 		
 					str += `
@@ -603,8 +579,6 @@ function ansAnsViewBtn(no) {
 //댓글 수정
 function udtAns(no) {
 
-	console.log("수정");
-
 	console.log(no);
 
 	$("#aftusBbscttAnswerCn" + no).hide();
@@ -617,7 +591,6 @@ function udtAns(no) {
 
 	//취소 클릭시
 	$("#btnCnsAns" + no).on("click", function () {
-		console.log("눌러보겠다!!");
 		$("#aftusBbscttAnswerCn" + no).css("display", "block");
 		$("#aftusBbscttAnswerCnUdt" + no).css("display", "none");
 		$("#btnUdtAns" + no).hide();
@@ -626,8 +599,6 @@ function udtAns(no) {
 
 	//수정 클릭시
 	$("#btnUdtAns" + no).on("click", function () {
-		console.log("할룽");
-		console.log($("#aftusBbscttAnswerCn" + no).val())
 		let aftusBbscttAnswerCn = $("#aftusBbscttAnswerCnUdt" + no).val();
 		console.log(no);
 
@@ -652,14 +623,11 @@ function udtAns(no) {
 		});
 	});
 
-	// 	$("#btnUdtAns"+no).val()
-
 }
 
 
 //댓글 삭제
 function delAns(no) {
-	console.log("삭제");
 
 	console.log("no : ", no);
 
@@ -700,8 +668,6 @@ function ansAnsCnt(no) {
 
 //대댓글 수정
 function udtAnsans(no) {
-	console.log("대댓글 수정");
-	console.log(no);
 
 	$("#aftusBbscttAnswerCn" + no).hide();
 	$("#aftusBbscttAnswerCnUdt" + no).val($("#aftusBbscttAnswerCn" + no).text());
@@ -713,7 +679,6 @@ function udtAnsans(no) {
 
 	//취소 클릭시
 	$("#btnCnsAns" + no).on("click", function () {
-		console.log("눌러보겠다!!");
 		$("#aftusBbscttAnswerCn" + no).show();
 		$("#aftusBbscttAnswerCnUdt" + no).hide();
 		$("#btnUdtAns" + no).hide();
@@ -721,7 +686,6 @@ function udtAnsans(no) {
 	});
 
 	$("#btnUdtAns" + no).on("click", function () {
-		console.log("할룽");
 		console.log($("#aftusBbscttAnswerCn" + no).val())
 		let aftusBbscttAnswerCn = $("#aftusBbscttAnswerCnUdt" + no).val();
 		console.log(no);
@@ -760,10 +724,8 @@ function udtAnsans(no) {
 
 //대댓글 삭제
 function delAnsans(aftusBbscttAnswerNo, ptAftusBbscttAnswerNo) {
-	console.log("삭제");
 	console.log("넘어온 대댓글 번호 : ", aftusBbscttAnswerNo);
 	console.log("넘어온 원댓글 번호 : ", ptAftusBbscttAnswerNo);
-
 
 	$.ajax({
 		url: "/reviewBoard/deleteAns",
@@ -773,9 +735,7 @@ function delAnsans(aftusBbscttAnswerNo, ptAftusBbscttAnswerNo) {
 		success: function (res) {
 			console.log("res", res)
 			$("#ansAnsView3" + aftusBbscttAnswerNo).hide();
-			//여기서 필요한것은 38이라는 숫자입니다..
 			ansAnsCnt(ptAftusBbscttAnswerNo);
-
 		}
 	});
 

@@ -73,7 +73,6 @@ public class ReviewBoardController {
 		String userId = userId(request);
 		
 		log.info("main -> userId : " + userId);
-		
 
 		model.addAttribute("userId", userId);
 		
@@ -150,7 +149,7 @@ public class ReviewBoardController {
 		model.addAttribute("srvcRequstNo", srvcRequstNo); 
 		
 		return "reviewBoard/create"; 
-		}
+	}
 
 	@PostMapping("/createAjax")
 	public String createAjax(HttpServletRequest request, AftusBbscttVO aftusBbscttVO) {

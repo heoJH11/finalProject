@@ -59,9 +59,6 @@ ul.chatMemList li img {
     align-items: end;
     justify-content: end;
 }
-/* .bg-primary, .settings-panel .color-tiles .tiles.primary { */
-/*     background-color: #4b49ac9c; */
-/* } */
 </style>
 <script type="text/javascript">
 
@@ -89,8 +86,8 @@ $(function() {
 	console.log(tdmtngMax);
 	console.log(chatMemCount);
 	
+	//정원 초과 여부
 	if(tdmtngMax == chatMemCount) {
-		console.log("꽉 찼다!!");
 		$("#btnPrctChat").css("display", "none");
 		$("#fullMeeting").css("display", "block");
 	}
@@ -182,7 +179,7 @@ $(function() {
 		})
 	})
 
-	//모임 참여 버튼 이벤트 -- 재훈 수정 필요하면  수정 해도 됨
+	//모임 참여 버튼 이벤트
 	$("#btnPrctChat").on("click", function() {
 		
 		let aftusBbscttNo = $("#aftusBbscttNo").val();
@@ -269,7 +266,7 @@ $(function() {
 			let fileArr = Array.prototype.slice.call(files);
 		
 			fileArr.forEach(function(f){
-				//이미지 파일이 아닌 경우 이미지 미리보기 실패 처리(MIME타입)
+				//이미지 파일이 아닌 경우 이미지 미리보기 실패 처리
 				console.log(f);
 				if(!f.type.match("image.*")){
 					Swal.fire({
@@ -283,12 +280,11 @@ $(function() {
 						})
 					return;
 				}
-				//이미지 객체를 읽을 자바스크립트의 reader 객체 생성
+
 				let reader = new FileReader();
 				
 				$(".clsCiImgUrl").html("");
 				
-				//e : reader가 이미지 객체를 읽는 이벤트
 				reader.onload = function(e){
 					$(".clsCiImgUrl").css({
 				          "background-image": "url(" + e.target.result + ")",
@@ -299,9 +295,8 @@ $(function() {
 				    });
 //	 				
 				}
-				//f : 이미지 파일 객체를 읽은 후 다음 이미지 파일(f)을 위해 초기화 함
 				reader.readAsDataURL(f);
-			});//end forEach
+			});
 		}
 	})
 	

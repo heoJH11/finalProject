@@ -10,15 +10,6 @@
 						http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
 						http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
-<!-- <beans:bean id="myHandler" class="kr.or.ddit.util.echo.EchoHandler" /> -->
-<!-- 	<websocket:handlers> -->
-<!-- 		<websocket:mapping handler="myHandler" path="/alram" /> -->
-<!-- 		<websocket:handshake-interceptors> -->
-<!-- 	         <beans:bean class="org.springframework.web.socket.server.support.HttpSessionHandshakeInterceptor"/> -->
-<!-- 	      </websocket:handshake-interceptors> -->
-<!-- 		<websocket:sockjs websocket-enabled="true"/> -->
-<!-- 	</websocket:handlers> -->
-
 	<!-- DispatcherServlet Context: defines this servlet's request-processing infrastructure -->
 	
 	<!-- Enables the Spring MVC @Controller programming model -->
