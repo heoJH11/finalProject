@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.usersSearch.mapper.UsersSearchMapper">
+	
+<!-- 	<sql id = "where"> -->
+<!-- 		<if test="keyword!=null and keyword!=''"> -->
+<!-- 			And( -->
+<!-- 				user_Id like '%' || #{keyword} || '%' -->
+				
+<!-- 			or user_Nm like '%' || #{keyword} || '%' -->
+
+<!-- 			or user_Ncnm like '%' || #{keyword} || '%' -->
+			
+<!-- 			) -->
+<!-- 		</if> -->
+<!-- 	</sql> -->
+
+	<sql id = "where">
+		<if test="keyword!=null and keyword!=''">
+			And(
+			<if test="searchKey == 'id'">
+				user_Id like '%' || #{keyword} || '%'
+			</if>
+			<if test="searchKey == 'name'">
+			 user_Nm like '%' || #{keyword} || '%'
+			</if>
+			<if test="searchKey == 'nickname'">
+			 user_Ncnm like '%' || #{keyword} || '%'
+			</if>
+			<if test="searchKey == 'type'">
+			 EMPLYR_TY like '%' || #{keyword} || '%'
+			</if>
+			)
+		</if>
+	</sql>
+	
+	<select id="list" parameterType="hashMap" resultType="kr.or.ddit.admin.usersSearch.vo.UsersVO">
+		with t as(
+			select row_number() over(order by f.user_id DESC)RNUM
+				,f.*
+			from(
+				SELECT USER_ID, USER_NM, USER_PASSWORD, EMPLYR_TY
+        ,SECSN_AT, USER_NCNM 
+        from users
+        WHERE 1=1
+        AND SECSN_AT = 1
+        AND  EMPLYR_TY != 'ET03'
+				<include refid = "where"></include>
+			)f
+		)
+		select t.* from t
+		where t.rnum between(#{currentPage}*10)-(10-1) and (#{currentPage}*10)
+	</select>
+	
+	
+	
+	<select id = "getTotal" parameterType="hashMap" resultType="int">
+		select count(*) from users
+		where 1 = 1
+		<include refid="where"></include>
+	</select>
+	
+	<select id="detail" parameterType="String" resultType="kr.or.ddit.admin.usersSearch.vo.UsersVO">
+    select USER_ID, USER_NM, USER_PASSWORD, EMPLYR_TY, SECSN_AT, USER_NCNM
+	from users
+	where USER_ID = #{userId}
+	</select>
+	
+	<select id = "getUserProfile" parameterType="String" resultType="String">
+	 SELECT CASE WHEN (SELECT EMPLYR_TY FROM USERS WHERE USER_ID = #{userId}) = 'ET01'
+     	THEN (SELECT MBER_PROFL_PHOTO FROM MBER WHERE MBER_ID = #{userId})
+     	WHEN (SELECT EMPLYR_TY FROM USERS WHERE USER_ID = #{userId}) = 'ET02'
+     	THEN (SELECT PRO_PROFL_PHOTO FROM PRO WHERE PRO_ID = #{userId})
+     	END AS PROFL_PHOTO
+     FROM USERS WHERE USER_ID = #{userId}
+        
+	</select>
+	
+	<update id="userDanger" parameterType="String">
+	 UPDATE USERS
+	 SET SECSN_AT = 0	 
+	 WHERE USER_ID = #{userId} 
+	</update>
+
+</mapper>

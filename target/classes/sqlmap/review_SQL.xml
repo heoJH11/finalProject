@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro_service.service_request.mapper.ReviewMapper">
+
+	<select id="reInfo" resultType="hashmap">
+		SELECT COMMON_CD_DETAIL, COMMON_CD, COMMON_CD_DETAIL_NM, COMMON_CD_DETAIL_EXPLAN
+		FROM COMMON_CD_DETAIL
+		WHERE COMMON_CD = 'REVIEW'
+	</select>
+	
+	<insert id="reCreate" parameterType="reviewVO">
+		INSERT INTO REVIEW(RE_NO, RE_SCORE, SRVC_REQUST_NO, RE_WR_DT, RE_CN, RE_TY)
+		VALUES(RE_NO_SEQ.NEXTVAL, #{reScore}, #{srvcRequstNo}, SYSDATE, #{reCn}, #{reTy})
+	</insert>
+
+
+	<select id="reDetail" parameterType="String" resultMap="reviewMap">
+		SELECT A.*
+		FROM REVIEW A
+		LEFT JOIN SRVC_REQUST B
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE B.MBER_ID = #{userId}
+	</select>
+
+	<select id="proReDetail" parameterType="String" resultMap="reviewMap">
+		SELECT A.*
+		FROM REVIEW A
+		LEFT JOIN SRVC_REQUST B
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE B.PRO_ID = #{userId}
+	</select>
+	
+	<resultMap type="reviewVO" id="reviewMap">
+		<result property="reNo" column="RE_NO"/>
+		<result property="reTy" column="RE_TY"/>
+		<result property="reCn" column="RE_CN"/>
+		<result property="reWrDt" column="RE_WR_DT"/>
+		<result property="reScore" column="RE_SCORE"/>
+		<result property="srvcRequstNo" column="SRVC_REQUST_NO"/>
+	</resultMap>
+	
+	
+	<select id="reviewTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*) 
+		FROM
+	    (SELECT A.*, B.SRVC_REQUST_SJ, B.USER_NCNM, B.EMPLYR_TY
+	    FROM REVIEW A
+	    JOIN V_SRVC_REQUST B 
+	    ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+	    WHERE MBER_ID = #{userId} AND EMPLYR_TY = #{emplyrTy})
+	    <if test="keyword != null and keyword != ''">
+	    WHERE USER_NCNM LIKE '%' || #{keyword} || '%'
+	    </if>
+	</select>
+	
+	<select id="proReviewTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*) 
+		FROM
+	    (SELECT A.*, B.SRVC_REQUST_SJ, B.USER_NCNM, B.EMPLYR_TY
+	    FROM REVIEW A
+	    JOIN V_SRVC_REQUST B 
+	    ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+	    WHERE PRO_ID = #{userId} AND EMPLYR_TY = 'ET01')
+	    <if test="keyword != null and keyword != ''">
+	    WHERE USER_NCNM LIKE '%' || #{keyword} || '%'
+	    </if>
+	</select>
+	
+	<select id="reviewList" parameterType="map" resultType="hashmap">
+		WITH T AS (
+			SELECT ROW_NUMBER() OVER (ORDER BY B.RE_WR_DT DESC) AS NUM,
+			B.RE_NO, B.RE_TY, B.RE_CN, B.RE_WR_DT, B.RE_SCORE, B.SRVC_REQUST_NO,
+			B.USER_NCNM, B.PRO_ID, B.SRVC_REQUST_SJ, B.EMPLYR_TY, B.PRO_PROFL_PHOTO
+		FROM (
+			SELECT C.*, D.SRVC_REQUST_SJ, D.USER_NCNM, D.USER_ID, D.EMPLYR_TY, D.PRO_ID, D.PRO_PROFL_PHOTO
+         FROM REVIEW C
+         JOIN (SELECT  A.*, B.PRO_PROFL_PHOTO
+               FROM V_SRVC_REQUST A
+               LEFT JOIN V_PRO_USERS B
+               ON A.PRO_ID = B.PRO_ID
+               WHERE A.MBER_ID=#{userId} AND A.EMPLYR_TY ='ET02') D
+           ON C.SRVC_REQUST_NO = D.SRVC_REQUST_NO
+			) B
+			<if test="keyword != null and keyword != ''">
+	           where user_ncnm LIKE '%' || #{keyword} || '%'
+			</if>
+		)
+		SELECT T.*
+		FROM T
+		WHERE T.NUM BETWEEN (#{currentPage}-#{size}) - (#{size}- 1) AND (#{currentPage}*#{size})
+	</select>
+	
+	<select id="proReviewList" parameterType="map" resultType="hashmap">
+		WITH T AS (
+			SELECT ROW_NUMBER() OVER (ORDER BY B.RE_WR_DT DESC) AS NUM,
+			B.RE_NO, B.RE_TY, B.RE_CN, B.RE_WR_DT, B.RE_SCORE, B.SRVC_REQUST_NO,
+			B.USER_NCNM, B.PRO_ID, B.SRVC_REQUST_SJ, B.EMPLYR_TY, B.PRO_PROFL_PHOTO
+		FROM (
+			SELECT C.*, D.SRVC_REQUST_SJ, D.USER_NCNM, D.USER_ID, D.EMPLYR_TY, D.PRO_ID, D.PRO_PROFL_PHOTO
+         FROM REVIEW C
+         JOIN (SELECT  A.*, B.PRO_PROFL_PHOTO
+               FROM V_SRVC_REQUST A
+               LEFT JOIN V_PRO_USERS B
+               ON A.PRO_ID = B.PRO_ID
+               WHERE A.PRO_ID=#{userId} AND A.EMPLYR_TY ='ET01') D
+           ON C.SRVC_REQUST_NO = D.SRVC_REQUST_NO
+			) B
+			<if test="keyword != null and keyword != ''">
+	           where user_ncnm LIKE '%' || #{keyword} || '%'
+			</if>
+		)
+		SELECT T.*
+		FROM T
+		WHERE T.NUM BETWEEN (#{currentPage}*#{size}) - (#{size}-1) AND (#{currentPage}*#{size})
+	</select>
+	
+	<select id="reviewNoWrCnt" parameterType="map" resultType="int">
+		SELECT COUNT(*) FROM
+	    (SELECT DISTINCT A.SRVC_REQUST_NO, A.SRVC_REQUST_SJ, A.SRVC_REQUST_WR_DT, A.PRO_ID, A.MBER_ID, A.SRVC_REQUST_PROCESS_MBER, A.SRVC_REQUST_PROCESS_PRO, B.SRVC_REQUST_NO AS REVIEW_REQUST_NO
+	    FROM V_SRVC_REQUST A
+	    LEFT JOIN REVIEW B
+	    ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+	    WHERE MBER_ID = #{userId} 
+	    AND SRVC_REQUST_PROCESS_MBER = 1 AND SRVC_REQUST_PROCESS_PRO = 1
+	    AND B.SRVC_REQUST_NO IS NULL)
+	</select>
+	
+	<select id="rqrvTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*) FROM 
+		V_SRVC_REQUST A
+		LEFT JOIN REVIEW B
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE USER_ID= #{userId} 
+		AND SRVC_REQUST_PROCESS_MBER = 1 
+		AND SRVC_REQUST_PROCESS_PRO = 1 
+	</select>
+	
+	<select id="showReview" parameterType="int" resultType="reviewVO">
+		SELECT * FROM REVIEW
+		WHERE RE_NO = #{reNo}
+	</select>
+	
+	<select id="reTyChrtList" parameterType="java.util.Map" resultType="java.util.Map">
+    	SELECT RE_TY, COUNT(*) AS COUNT
+		FROM
+		(SELECT DISTINCT
+		A.RE_TY, A.RE_SCORE,
+		B.SRVC_REQUST_NO, B.MBER_ID
+		FROM REVIEW A
+		LEFT JOIN V_SRVC_REQUST B
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE MBER_ID = #{userId}
+		)
+		GROUP BY RE_TY
+		ORDER BY RE_TY ASC
+	</select>
+
+	<select id="proReTyChrtList" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT RE_TY, COUNT(*) AS COUNT
+		FROM
+		(SELECT DISTINCT
+		A.RE_TY, A.RE_SCORE,
+		B.SRVC_REQUST_NO, B.PRO_ID
+		FROM REVIEW A
+		LEFT JOIN V_SRVC_REQUST B
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE PRO_ID = #{userId}
+		)
+		GROUP BY RE_TY
+		ORDER BY RE_TY ASC
+	</select>
+
+
+	<select id="reScoreChrtList" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT RE_SCORE, COUNT(*) AS COUNT
+		FROM
+		(SELECT DISTINCT
+		A.RE_TY, A.RE_SCORE,
+		B.SRVC_REQUST_NO, B.MBER_ID
+		FROM REVIEW A
+		LEFT JOIN V_SRVC_REQUST B
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE MBER_ID = #{userId}
+		)
+		GROUP BY RE_SCORE
+		ORDER BY RE_SCORE ASC
+	</select>
+
+	<select id="proReScoreChrtList" parameterType="java.util.Map" resultType="java.util.Map">
+		SELECT RE_SCORE, COUNT(*) AS COUNT
+		FROM
+		(SELECT DISTINCT
+		A.RE_TY, A.RE_SCORE,
+		B.SRVC_REQUST_NO, B.PRO_ID
+		FROM REVIEW A
+		LEFT JOIN V_SRVC_REQUST B
+		ON A.SRVC_REQUST_NO = B.SRVC_REQUST_NO
+		WHERE PRO_ID = #{userId}
+		)
+		GROUP BY RE_SCORE
+		ORDER BY RE_SCORE ASC
+	</select>
+</mapper>

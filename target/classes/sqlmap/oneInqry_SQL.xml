@@ -1,0 +1,318 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.oneInqry.mapper.OneInqryMapper">
+   
+   <select id="getTotal" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+      FROM
+      (SELECT *
+      FROM ONE_INQRY A
+      LEFT JOIN ONE_INQRY_ANSWER B
+      ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+      WHERE A.ONE_INQRY_SJ NOT LIKE '%탈퇴%'
+      <if test="userId != mngrId">
+         AND A.USER_ID = #{userId} 
+      </if>
+      <choose>
+         <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+            AND
+            ${selectColumn} LIKE '%' || #{keyword}  || '%'
+         </when>
+         <when test="'ALL'.equals(selectColumn)">
+            AND
+            (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+               OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+         </when>
+      </choose>
+      ) 
+      </select>
+      
+      
+   <select id="getNoAnswerTotal" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+      FROM
+      (SELECT *
+      FROM ONE_INQRY A
+      LEFT JOIN ONE_INQRY_ANSWER B
+      ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+      WHERE B.ONE_INQRY_ANSWER_CN IS NULL
+      AND A.ONE_INQRY_SJ NOT LIKE '%탈퇴%'
+      <if test="userId != mngrId">
+         AND A.USER_ID = #{userId} 
+      </if>
+      <choose>
+         <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+            AND
+            ${selectColumn} LIKE '%' || #{keyword}  || '%'
+         </when>
+         <when test="'ALL'.equals(selectColumn)">
+            AND
+            (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+               OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+         </when>
+      </choose>
+      ) 
+      </select>
+
+   <select id="getSuccessTotal" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+      FROM
+      (SELECT *
+      FROM ONE_INQRY A
+      LEFT JOIN ONE_INQRY_ANSWER B
+      ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+      WHERE B.ONE_INQRY_ANSWER_CN IS NOT NULL
+      AND A.ONE_INQRY_SJ NOT LIKE '%탈퇴%'
+      <if test="userId != mngrId">
+         AND A.USER_ID = #{userId} 
+      </if>
+      <choose>
+         <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+            AND
+            ${selectColumn} LIKE '%' || #{keyword}  || '%'
+         </when>
+         <when test="'ALL'.equals(selectColumn)">
+            AND
+            (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+               OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+         </when>
+      </choose>
+      ) 
+      </select>
+      
+      <resultMap type="oneInqryVO" id="oneInqryVOMap">
+         <result property="num" column="NUM"/>
+      <result property="oneInqryNo" column="ONE_INQRY_NO"/>
+      <result property="userId" column="USER_ID"/>
+      <result property="oneInqrySj" column="ONE_INQRY_SJ"/>
+      <result property="oneInqryCn" column="ONE_INQRY_CN"/>
+      <result property="oneInqryWritngDt" column="ONE_INQRY_WRITNG_DT"/>
+      <result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+      <collection property="sprviseAtchmnflVOList" resultMap="sprviseAtchMap"></collection>
+      <collection property="oneInqryAnswerVOList" resultMap="oneInqryAnswerMap"></collection>
+      </resultMap>
+      
+      <resultMap type="oneInqryAnswerVO" id="oneInqryAnswerMap">
+         <result property="oneInqryAnswerNo" column="ONE_INQRY_ANSWER_NO"/>
+      <result property="oneInqryAnswerCn" column="ONE_INQRY_ANSWER_CN"/>
+      <result property="oneInqryAnswerWrDt" column="ONE_INQRY_ANSWER_WR_DT"/>
+      <result property="oneInqryNo" column="ONE_INQRY_NO"/>
+      <result property="userId" column="USER_ID"/>
+      <result property="mngrId" column="MNGR_ID"/>
+      </resultMap>
+      
+      <resultMap type="sprviseAtchmnflVO" id="sprviseAtchMap">
+      <result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+      <result property="atchmnflNo" column="ATCHMNFL_NO"/>
+      <result property="atchmnflCours" column="ATCHMNFL_COURS"/>
+      <result property="atchmnflNm" column="ATCHMNFL_NM"/>
+      <result property="storeAtchmnflNm" column="STORE_ATCHMNFL_NM"/>
+      <result property="atchmnflTy" column="ATCHMNFL_TY"/>
+      <result property="registDt" column="REGIST_DT"/>
+      <result property="userId" column="USER_ID"/>
+      <result property="updtDt" column="UPDT_DT"/>
+   </resultMap>
+      
+   <select id="searchList" parameterType="map" resultMap="oneInqryVOMap">
+      WITH T AS (
+      SELECT ROW_NUMBER() OVER (ORDER BY ONE_INQRY_WRITNG_DT DESC) NUM, B.*
+      FROM(
+      (SELECT A.*
+      FROM
+          (SELECT *
+           FROM ONE_INQRY A
+           LEFT JOIN ONE_INQRY_ANSWER B
+           ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+	       WHERE A.ONE_INQRY_SJ NOT LIKE '%탈퇴%'
+           <if test="userId != 'testAdmin'">
+            AND A.USER_ID = #{userId}
+          </if>
+      <choose>
+         <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+            AND
+            ${selectColumn} LIKE '%' || #{keyword}  || '%'
+         </when>
+         <when test="'ALL'.equals(selectColumn)">
+            AND
+            (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+               OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+         </when>
+      </choose>
+           ) A
+         )
+      )B
+      )
+      SELECT T.* 
+      FROM T
+      WHERE T.NUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+      </select>
+
+      
+      <select id="oneInqryNoAnswerList" parameterType="map" resultMap="oneInqryVOMap">
+         WITH T AS (
+      SELECT ROW_NUMBER() OVER (ORDER BY ONE_INQRY_WRITNG_DT DESC) NUM, B.*
+      FROM(
+      (SELECT A.*
+      FROM
+          (SELECT *
+           FROM ONE_INQRY A
+           LEFT JOIN ONE_INQRY_ANSWER B
+           ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+          WHERE B.ONE_INQRY_ANSWER_CN IS NULL
+           <if test="userId != 'testAdmin'">
+            AND A.USER_ID = #{userId}
+          </if>
+          AND A.ONE_INQRY_SJ NOT LIKE '%탈퇴%'
+      <choose>
+         <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+            AND
+            ${selectColumn} LIKE '%' || #{keyword}  || '%'
+         </when>
+         <when test="'ALL'.equals(selectColumn)">
+            AND
+            (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+               OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+         </when>
+      </choose>
+           ) A
+         )
+      )B
+      )
+      SELECT T.* 
+      FROM T
+      WHERE T.NUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+      </select>
+
+      <select id="oneInqrySuccessList" parameterType="map" resultMap="oneInqryVOMap">
+         WITH T AS (
+      SELECT ROW_NUMBER() OVER (ORDER BY ONE_INQRY_WRITNG_DT DESC) NUM, B.*
+      FROM(
+      (SELECT A.*
+      FROM
+          (SELECT *
+           FROM ONE_INQRY A
+           LEFT JOIN ONE_INQRY_ANSWER B
+           ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+          WHERE B.ONE_INQRY_ANSWER_CN IS NOT NULL
+           <if test="userId != 'testAdmin'">
+            AND A.USER_ID = #{userId}
+          </if>
+          AND A.ONE_INQRY_SJ NOT LIKE '%탈퇴%' 
+      <choose>
+         <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+            AND
+            ${selectColumn} LIKE '%' || #{keyword}  || '%'
+         </when>
+         <when test="'ALL'.equals(selectColumn)">
+            AND
+            (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+               OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+         </when>
+      </choose>
+           ) A
+         )
+      )B
+      )
+      SELECT T.* 
+      FROM T
+      WHERE T.NUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+      </select>
+      
+      <insert id="oneInqryCreatePost" parameterType="map">
+      INSERT INTO ONE_INQRY(ONE_INQRY_NO, USER_ID, ONE_INQRY_SJ, ONE_INQRY_CN,ONE_INQRY_WRITNG_DT, SPRVISE_ATCHMNFL_NO)
+       VALUES(ONE_INQRY_NO_SEQ.NEXTVAL,#{userId}, #{oneInqrySj}, #{oneInqryCn},SYSDATE, SPRVISE_ATCHMNFL_NO_SEQ.NEXTVAL)
+   </insert>
+   
+   <select id="oneInqryDetail" parameterType="oneInqryVO" resultMap="oneInqryVOMap">
+      SELECT *
+      FROM ONE_INQRY A
+      LEFT JOIN ONE_INQRY_ANSWER B
+      ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+      <choose>
+         <when test="userId != 'testAdmin'">
+            WHERE A.USER_ID = #{userId} AND A.ONE_INQRY_NO = #{oneInqryNo}
+         </when>
+         <otherwise>
+            WHERE A.ONE_INQRY_NO = #{oneInqryNo}
+         </otherwise>
+      </choose>
+      
+   </select>
+   
+   <update id="oneInqryUpdatePost" parameterType="oneInqryVO">
+      UPDATE ONE_INQRY SET ONE_INQRY_SJ = #{oneInqrySj}, ONE_INQRY_CN = #{oneInqryCn} WHERE ONE_INQRY_NO = #{oneInqryNo}
+   </update>
+   
+   <insert id="updateAnswer" parameterType="map">
+      INSERT INTO ONE_INQRY_ANSWER
+        VALUES(ONE_INQRY_ANSWER_NO_SEQ.NEXTVAL, #{oneInqryAnswerCn}, SYSDATE, #{oneInqryNo}, #{userId}, 'testAdmin')
+   </insert>
+      
+      <insert id="resignPro" parameterType="map">
+      INSERT INTO ONE_INQRY(ONE_INQRY_NO, USER_ID, ONE_INQRY_SJ, ONE_INQRY_CN,ONE_INQRY_WRITNG_DT)
+       VALUES(ONE_INQRY_NO_SEQ.NEXTVAL, #{userId}, '[탈퇴]', #{oneIqnryCn}, SYSDATE)
+   </insert>
+   
+   <select id="resignProList" parameterType="map" resultType="oneInqryVO">
+      SELECT D.*
+      FROM
+      (SELECT ROW_NUMBER() OVER (ORDER BY ONE_INQRY_WRITNG_DT ASC) NUM, C.*
+      FROM
+      (SELECT *
+      FROM ONE_INQRY A
+      LEFT OUTER JOIN USERS U
+      ON A.USER_ID = U.USER_ID
+      LEFT JOIN ONE_INQRY_ANSWER B
+      ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+      WHERE A.ONE_INQRY_SJ = '[탈퇴]'
+      AND U.SECSN_AT = 1
+      <choose>
+         <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+            AND
+            ${selectColumn} LIKE '%' || #{keyword}  || '%'
+         </when>
+         <when test="'ALL'.equals(selectColumn)">
+            AND
+            (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+               OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+         </when>
+      </choose>
+      )C
+      )D
+      WHERE D.NUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+      ORDER BY D.ONE_INQRY_WRITNG_DT DESC
+   </select>
+
+   <select id="getTotalResignPro" parameterType="map" resultType="int">
+      SELECT COUNT(*)
+      FROM
+      (
+         SELECT *
+         FROM ONE_INQRY A
+         LEFT OUTER JOIN USERS U
+         ON A.USER_ID = U.USER_ID
+         LEFT JOIN ONE_INQRY_ANSWER B
+         ON A.ONE_INQRY_NO = B.ONE_INQRY_NO
+         WHERE A.ONE_INQRY_SJ = '[탈퇴]'
+         <choose>
+            <when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+               AND
+               ${selectColumn} LIKE '%' || #{keyword}  || '%'
+            </when>
+            <when test="'ALL'.equals(selectColumn)">
+               AND
+               (A.ONE_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+                  OR A.USER_ID LIKE '%' || #{keyword}  || '%')
+            </when>
+         </choose>
+         AND U.SECSN_AT = 1
+      )
+   </select>
+   
+   <update id="proSecssion" parameterType="String">
+      UPDATE USERS
+      SET SECSN_AT = 0
+      WHERE USER_ID = #{proId}
+      AND EMPLYR_TY = 'ET02'
+   </update>
+</mapper>

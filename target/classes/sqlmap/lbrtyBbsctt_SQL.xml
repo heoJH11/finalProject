@@ -1,0 +1,313 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.board.freeboard.mapper.LbrtyBbscttMapper">
+	<sql id="where">
+		<if test="keyword!=null and keyword!=''">
+			AND (
+					USER_ID LIKE LIKE '%' || #{keyword} || '%'
+<!-- 				OR	LBRTY_BBSCTT_CN LIKE '%' || #{keyword} || '%' -->
+<!-- 				OR	USER_NCNM LIKE '%' || #{keyword} || '%' -->
+			)
+		</if>
+	</sql>
+	
+	
+	<select id="lbrtyBbscttList" resultType="lbrtyBbscttVO2">
+		SELECT LBRTY_BBSCTT_NO, LBRTY_BBSCTT_SJ, USER_ID, USER_NCNM, DEL_TYPE
+    	FROM V_LBRTY_BBSCTT
+    	WHERE DEL_TYPE = '0'
+    	<if test = "userId != null">
+			AND USER_ID = #{userId}
+		</if>
+        order by lbrty_bbsctt_wr_dt DESC
+    </select>
+    
+    <select id="lbrtyBbscttDetail" parameterType="int" resultType="lbrtyBbscttVO">
+    	SELECT LBRTY_BBSCTT_NO, LBRTY_BBSCTT_SJ, LBRTY_BBSCTT_CN, LBRTY_BBSCTT_WR_DT,
+    		LBRTY_BBSCTT_RDCNT, SPRVISE_ATCHMNFL_NO, USER_ID
+		FROM LBRTY_BBSCTT
+		WHERE 1=1 AND
+    		LBRTY_BBSCTT_NO = ${lbrtyBbscttNo}
+    </select>
+    <delete id="lbrtyBbscttDelete" parameterType="lbrtyBbscttVO">
+    	DELETE FROM LBRTY_BBSCTT
+    	WHERE 1=1 AND
+    		LBRTY_BBSCTT_NO = ${lbrtyBbscttNo}
+    </delete>
+    
+    <update id="lbrtyBbscttUpdate" parameterType="lbrtyBbscttVO">
+    	UPDATE LBRTY_BBSCTT
+		SET
+    		LBRTY_BBSCTT_SJ = #{lbrtyBbscttSj},
+    		<if test="lbrtyBbscttCn!=null and lbrtyBbscttCn!=''">
+		    LBRTY_BBSCTT_CN = #{lbrtyBbscttCn},
+		    </if>
+		    LBRTY_BBSCTT_WR_DT = sysdate
+		WHERE
+		    lbrty_bbsctt_no = ${lbrtyBbscttNo}
+    </update>
+    
+    <delete id="sprviseAtchmnflDelete" parameterType="lbrtyBbscttVO">
+    DELETE FROM SPRVISE_ATCHMNFL
+    	WHERE 1=1 AND
+    		SPRVISE_ATCHMNFL_NO = ${sprviseAtchmnflNo}
+    </delete>
+    
+    <insert id="lbrtyBbscttInsert" parameterType="lbrtyBbscttVO">
+    	INSERT INTO lbrty_bbsctt (
+    		lbrty_bbsctt_no,
+    		lbrty_bbsctt_sj,
+    		lbrty_bbsctt_cn,
+    		lbrty_bbsctt_wr_dt,
+    		<if test="sprviseAtchmnflNo !=0">
+    		sprvise_atchmnfl_no,
+    		</if>
+    		user_id
+		) VALUES (
+    		LBRTY_BBSCTT_NO_SEQ.nextval,
+    		#{lbrtyBbscttSj},
+    		#{lbrtyBbscttCn},
+    		SYSDATE,
+    		<if test="sprviseAtchmnflNo !=0">
+    		SPRVISE_ATCHMNFL_NO_SEQ.nextval,
+    		</if>
+    		#{userId}
+		)
+    </insert>
+    
+    <insert id="SprviseAtchmnflInsert" parameterType="sprviseAtchmnfl">
+    	INSERT INTO SPRVISE_ATCHMNFL (
+    		SPRVISE_ATCHMNFL_NO, 
+    		ATCHMNFL_NO, 
+    		ATCHMNFL_COURS, 
+			ATCHMNFL_NM, 
+			STORE_ATCHMNFL_NM, 
+			ATCHMNFL_TY,  
+			USER_ID
+		) VALUES (
+		    SPRVISE_ATCHMNFL_NO_SEQ.CURRVAL,
+		    #{atchmnflNo},
+		    #{atchmnflCours},
+		    #{atchmnflNm},
+		    #{storeAtchmnflNm},
+		    #{atchmnflTy},
+		    #{userId}
+		)
+    </insert>
+    
+    <select id="lbrtyBbscttAnswerList" parameterType="string" resultType="lbrtyBbscttAnswerVO2">
+    	select LBRTY_BBSCTT_ANSWER_NO, LBRTY_BBSCTT_NO, LBRTY_BBSCTT_ANSWER_CN, LBRTY_BBSCTT_ANSWER_WR_DT, PT_LBRTY_BBSCTT_ANSWER_NO,
+			PT_LBRTY_BBSCTT_NO, USER_ID, USER_NCNM
+		from V_LBRTY_BBSCTT_ANSWER
+		WHERE LBRTY_BBSCTT_NO = ${lbrtyBbscttNo}
+			AND PT_LBRTY_BBSCTT_NO IS NULL
+			AND PT_LBRTY_BBSCTT_ANSWER_NO IS NULL
+		order by LBRTY_BBSCTT_ANSWER_WR_DT DESC
+    </select>
+    
+    <insert id="lbrtyBbscttAnswerInsert" parameterType="lbrtyBbscttAnswerVO">
+    	insert into LBRTY_BBSCTT_ANSWER(
+    		LBRTY_BBSCTT_ANSWER_NO, LBRTY_BBSCTT_NO, LBRTY_BBSCTT_ANSWER_CN, 
+    		LBRTY_BBSCTT_ANSWER_WR_DT, USER_ID
+		)values(
+    		LBRTY_BBSCTT_ANSWER_NO_SEQ.nextval,${lbrtyBbscttNo},#{lbrtyBbscttAnswerCn},
+    		sysdate,#{userId}
+		)
+    </insert>
+    
+    <delete id="lbrtyBbscttAnswerDelete" parameterType="lbrtyBbscttAnswerVO">
+    	delete from LBRTY_BBSCTT_ANSWER
+    	where 1 = 1 and
+    		LBRTY_BBSCTT_ANSWER_NO = ${lbrtyBbscttAnswerNo}
+    </delete>
+    
+    <update id="lbrtyBbscttAnswerUpdate" parameterType="lbrtyBbscttAnswerVO">
+    	UPDATE lbrty_bbsctt_answer
+		SET
+    		LBRTY_BBSCTT_ANSWER_CN = #{lbrtyBbscttAnswerCn},
+    		LBRTY_BBSCTT_ANSWER_WR_DT = sysdate
+		WHERE
+    		lbrty_bbsctt_answer_no = ${lbrtyBbscttAnswerNo}
+    
+    </update>
+    
+    <select id="ansAnsList" parameterType="lbrtyBbscttAnswerVO" resultType="lbrtyBbscttAnswerVO2">
+    	select LBRTY_BBSCTT_ANSWER_NO, LBRTY_BBSCTT_NO, LBRTY_BBSCTT_ANSWER_CN, LBRTY_BBSCTT_ANSWER_WR_DT,
+			PT_LBRTY_BBSCTT_ANSWER_NO, PT_LBRTY_BBSCTT_NO, USER_ID, USER_NCNM 
+		from V_LBRTY_BBSCTT_ANSWER
+		where PT_LBRTY_BBSCTT_ANSWER_NO = #{ptLbrtyBbscttAnswerNo}
+    </select>
+    
+    <insert id="ansAnsInt" parameterType="lbrtyBbscttAnswerVO">
+    	INSERT INTO lbrty_bbsctt_answer (
+		    lbrty_bbsctt_answer_no,
+		    lbrty_bbsctt_no,
+		    lbrty_bbsctt_answer_cn,
+		    lbrty_bbsctt_answer_wr_dt,
+		    pt_lbrty_bbsctt_answer_no,
+		    user_id,
+		    pt_lbrty_bbsctt_no
+		) VALUES (
+		    LBRTY_BBSCTT_ANSWER_NO_SEQ.nextval,
+		    ${lbrtyBbscttNo},
+		    #{lbrtyBbscttAnswerCn},
+		    sysdate,
+		    ${ptLbrtyBbscttAnswerNo},
+		    #{userId},
+		    ${ptLbrtyBbscttNo}
+		)
+    </insert>
+    
+    <select id="ansAnsCnt" parameterType="lbrtyBbscttAnswerVO" resultType="int">
+    	select count(*)
+		from V_LBRTY_BBSCTT_ANSWER
+			where PT_LBRTY_BBSCTT_ANSWER_NO = ${ptLbrtyBbscttAnswerNo}
+    </select>
+    
+    <select id="sprviseAtchmnflDetail" parameterType="int" resultType="sprviseAtchmnfl">
+    	select SPRVISE_ATCHMNFL_NO, ATCHMNFL_NO, ATCHMNFL_COURS, ATCHMNFL_NM,
+    		 STORE_ATCHMNFL_NM, ATCHMNFL_TY, REGIST_DT, USER_ID, UPDT_DT
+    	from SPRVISE_ATCHMNFL
+		where sprvise_atchmnfl_no = ${sprviseAtchmnflNo}
+    </select>
+    
+    <delete id="fileDel" parameterType="sprviseAtchmnfl">
+    	delete from SPRVISE_ATCHMNFL
+		where SPRVISE_ATCHMNFL_NO = ${sprviseAtchmnflNo} and
+		ATCHMNFL_NO = ${atchmnflNo}
+    </delete>
+    
+    <select id="sprviseAtchmnflNoNextval" resultType="int">
+    	SELECT SPRVISE_ATCHMNFL_NO_SEQ.nextval FROM DUAL
+    </select>
+    
+    <insert id="uptSprviseAtchmnflInsert" parameterType="sprviseAtchmnfl">
+    <selectKey keyProperty="atchmnflNo" resultType="int" order="BEFORE"> 
+    	select nvl(max(ATCHMNFL_NO),0)+1 from SPRVISE_ATCHMNFL
+				where SPRVISE_ATCHMNFL_NO = #{sprviseAtchmnflNo}
+    </selectKey>
+    	INSERT INTO SPRVISE_ATCHMNFL (
+    		SPRVISE_ATCHMNFL_NO, 
+    		ATCHMNFL_NO, 
+    		ATCHMNFL_COURS, 
+			ATCHMNFL_NM, 
+			STORE_ATCHMNFL_NM, 
+			ATCHMNFL_TY,  
+			USER_ID,
+			UPDT_DT
+		) VALUES (
+		    ${sprviseAtchmnflNo},
+		    #{atchmnflNo},
+		    #{atchmnflCours},
+		    #{atchmnflNm},
+		    #{storeAtchmnflNm},
+		    #{atchmnflTy},
+		    #{userId},
+		    sysdate
+		)
+    </insert>
+    
+    <update id="uptsprviseAtchmnflNo" parameterType="lbrtyBbscttVO">
+    	update LBRTY_BBSCTT 
+		set SPRVISE_ATCHMNFL_NO = ${sprviseAtchmnflNo}
+		where LBRTY_BBSCTT_NO = ${lbrtyBbscttNo}
+    </update>
+    
+    <select id="detailfileList" resultType="sprviseAtchmnfl">
+    	select SPRVISE_ATCHMNFL_NO, ATCHMNFL_NO, ATCHMNFL_COURS, ATCHMNFL_NM,
+    		STORE_ATCHMNFL_NM, ATCHMNFL_TY, REGIST_DT, USER_ID, UPDT_DT
+		from SPRVISE_ATCHMNFL
+		where SPRVISE_ATCHMNFL_NO = ${sprviseAtchmnflNo}
+    </select>
+    
+    <select id="lbrtyBbscttListPage" parameterType="hashMap" resultType="lbrtyBbscttVO2">
+		WITH T AS(
+		    SELECT ROW_NUMBER() OVER(ORDER BY LBRTY_BBSCTT_WR_DT) RNUM,
+		          LBRTY_BBSCTT_NO, LBRTY_BBSCTT_SJ, LBRTY_BBSCTT_CN, LBRTY_BBSCTT_WR_DT, LBRTY_BBSCTT_RDCNT,
+                  SPRVISE_ATCHMNFL_NO, USER_ID, USER_NCNM, DEL_TYPE
+		    FROM   V_LBRTY_BBSCTT
+		    WHERE  1 = 1
+		    and DEL_TYPE=0
+		    
+			<if test = "userId != null">
+				AND USER_ID = #{userId}
+			</if>
+		    <include refid="where"></include>
+		)
+		SELECT T.* FROM T
+		WHERE  T.RNUM BETWEEN (#{total} - (10 * (#{currentPage} - 1)) - 9) 
+			AND 	(#{total} - (10 * (#{currentPage} - 1)))
+		ORDER BY RNUM DESC
+	</select>
+	
+	<select id="getTotal" parameterType="hashMap" resultType="int">
+		select count(*) from V_LBRTY_BBSCTT
+		where 1 = 1
+		and DEL_TYPE = 0 
+		<if test = "userId != null">
+				AND USER_ID = #{userId}
+		</if>
+		<include refid="where"></include>
+	</select>
+	
+	<!-- <sql id="selectUserIdSql">
+		    <if test="declAnswerNo != null and declAnswerNo != ''">
+		        SELECT USER_ID FROM LBRTY_BBSCTT_ANSWER
+		        WHERE LBRTY_BBSCTT_ANSWER_NO = #{declAnswerNo}
+		        AND LBRTY_BBSCTT_NO = #{declBbscttNo}
+		    </if>
+		    <if test="declAnswerNo == null or declAnswerNo == '' or declAnswerNo == 0">
+		        SELECT USER_ID FROM LBRTY_BBSCTT
+		        WHERE LBRTY_BBSCTT_NO = #{declBbscttNo}
+		    </if>
+	</sql> -->
+	<insert id="declInsert" parameterType="sntncDeclVO">
+		<!-- <selectKey keyProperty="userId2" resultType="string" order="BEFORE">
+		    <include refid="selectUserIdSql"/>
+		</selectKey> -->
+		<selectKey keyProperty="userId2" resultType="string" order="BEFORE"> 
+	    	select USER_ID from ${declTarget}
+    		where LBRTY_BBSCTT_NO = #{declBbscttNo}
+    		<if test="declAnswerNo!=null and declAnswerNo!=''">
+    		and LBRTY_BBSCTT_ANSWER_NO = #{declAnswerNo}
+    		</if>
+    		<!-- <if test="declAnswerNo==null or declAnswerNo=='' or declAnswerNo==0">
+    		select USER_ID from LBRTY_BBSCTT
+    		where LBRTY_BBSCTT_NO = #{declBbscttNo}
+    		</if> -->
+	    </selectKey>
+		INSERT INTO sntnc_decl (
+    		decl_no, decl_resn, user_id, user_id2,
+    		DECL_RCEPT_DE, decl_bbsctt_no, decl_target
+    		<if test="declAnswerNo!=null and declAnswerNo!=''">
+    		,decl_answer_no
+    		</if>
+    		
+		) VALUES (
+    		DECL_NO_SEQ.nextval, #{declResn}, #{userId}, #{userId2},
+    		sysdate,${declBbscttNo},#{declTarget}
+    		<if test="declAnswerNo!=null and declAnswerNo!=''">
+    		,${declAnswerNo}
+    		</if>
+    		
+		)
+	</insert>
+	
+	<select id="declComCdDeSelect" resultType="commonCdDetailVO">
+		select COMMON_CD_DETAIL, COMMON_CD, COMMON_CD_DETAIL_NM, 
+			COMMON_CD_DETAIL_EXPLAN, COMMON_CD_DETAIL_USE_WH
+		from COMMON_CD_DETAIL
+		where common_cd = 'DECL_RESN_POST'
+	</select>
+	
+	<update id="cntUp" parameterType="int">
+		update LBRTY_BBSCTT 
+			set LBRTY_BBSCTT_RDCNT = 
+			(select nvl(LBRTY_BBSCTT_RDCNT,0)+1 
+				from LBRTY_BBSCTT
+				where LBRTY_BBSCTT_NO = #{lbrtyBbscttNo})
+		where LBRTY_BBSCTT_NO = #{lbrtyBbscttNo}
+	</update>
+    
+    
+</mapper>

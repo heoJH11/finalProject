@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro_service.service_inquiry.mapper.SrvcBtfInqryMapper">
+
+	<select id="userChk" parameterType="String" resultType="usersVO">
+		SELECT USER_ID, USER_NCNM, EMPLYR_TY
+		FROM USERS
+		WHERE USER_ID = #{userId}
+	</select>
+	
+	<select id="getTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM
+		(SELECT * FROM V_SRVC_BTF_INQRY
+		<choose>
+			<when test='"ET02".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND MBER_ID=#{vSrvcBtfInqryVO.userId}
+			</when>
+			<when test='"ET01".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND PRO_ID=#{vSrvcBtfInqryVO.userId}
+			</when>
+		</choose>
+		) A
+		<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				WHERE
+				${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(selectColumn)">
+				WHERE
+				(A.BTF_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+   	</select>
+   	
+	<select id="getNoAnswerTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM
+		(SELECT * FROM V_SRVC_BTF_INQRY
+		<choose>
+			<when test='"ET02".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND MBER_ID=#{vSrvcBtfInqryVO.userId}
+				AND BTF_INQRY_ANSWER_CN IS NULL
+			</when>
+			<when test='"ET01".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND PRO_ID=#{vSrvcBtfInqryVO.userId}
+				AND BTF_INQRY_ANSWER_CN IS NULL
+			</when>
+		</choose>
+		) A
+		<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				WHERE
+				${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(selectColumn)">
+				WHERE
+				(A.BTF_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+   	</select>
+
+	<select id="getSuccessTotal" parameterType="map" resultType="int">
+		SELECT COUNT(*)
+		FROM
+		(SELECT * FROM V_SRVC_BTF_INQRY
+		<choose>
+			<when test='"ET02".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND MBER_ID=#{vSrvcBtfInqryVO.userId}
+				AND BTF_INQRY_ANSWER_CN IS NOT NULL
+			</when>
+			<when test='"ET01".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND PRO_ID=#{vSrvcBtfInqryVO.userId}
+				AND BTF_INQRY_ANSWER_CN IS NOT NULL
+			</when>
+		</choose>
+		) A
+		<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				WHERE
+				${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="'ALL'.equals(selectColumn)">
+				WHERE
+				(A.BTF_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%')
+			</when>
+		</choose>
+   	</select>
+	
+	
+	<select id="btfInqryList" parameterType="map" resultType="vSrvcBtfInqryVO">
+		WITH T AS (
+		SELECT ROW_NUMBER() OVER (ORDER BY B.BTF_INQRY_WR_DT DESC) NUM, B.*
+		FROM
+		(SELECT A.* 
+		 FROM V_SRVC_BTF_INQRY A
+		<choose>
+			<when test='"ET02".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND MBER_ID=#{vSrvcBtfInqryVO.userId}
+			</when>
+			<when test='"ET01".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND PRO_ID=#{vSrvcBtfInqryVO.userId}
+			</when>
+		</choose>
+		<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				AND ${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="keyword != null and keyword != '' and 'ALL'.equals(selectColumn)">
+				AND (
+					A.BTF_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%'
+					)
+			</when>
+		</choose>
+		) B
+		)
+		SELECT T.* 
+    	FROM T
+    	WHERE T.NUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+	</select>
+	
+	<select id="btfInqryNoAnswerList" parameterType="map" resultType="vSrvcBtfInqryVO">
+		WITH T AS (
+		SELECT ROW_NUMBER() OVER (ORDER BY B.BTF_INQRY_WR_DT DESC) NUM, B.*
+		FROM
+		(SELECT A.* 
+		 FROM V_SRVC_BTF_INQRY A
+		<choose>
+			<when test='"ET02".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND MBER_ID=#{vSrvcBtfInqryVO.userId} AND A.BTF_INQRY_ANSWER_CN IS NULL
+			</when>
+			<when test='"ET01".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND PRO_ID=#{vSrvcBtfInqryVO.userId} AND A.BTF_INQRY_ANSWER_CN IS NULL
+			</when>
+		</choose>
+		<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				AND ${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="keyword != null and keyword != '' and 'ALL'.equals(selectColumn)">
+				AND (
+					A.BTF_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%'
+					)
+			</when>
+		</choose>
+		) B
+		)
+		SELECT T.* 
+    	FROM T
+    	WHERE T.NUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+	</select>
+	
+	<select id="btfInqrySuccessList" parameterType="map" resultType="vSrvcBtfInqryVO">
+		WITH T AS (
+		SELECT ROW_NUMBER() OVER (ORDER BY B.BTF_INQRY_WR_DT DESC) NUM, B.*
+		FROM
+		(SELECT A.* 
+		 FROM V_SRVC_BTF_INQRY A
+		<choose>
+			<when test='"ET02".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND MBER_ID=#{vSrvcBtfInqryVO.userId} AND A.BTF_INQRY_ANSWER_CN IS NOT NULL
+			</when>
+			<when test='"ET01".equals(vSrvcBtfInqryVO.emplyrTy)'>
+				WHERE emplyr_ty=#{vSrvcBtfInqryVO.emplyrTy} AND PRO_ID=#{vSrvcBtfInqryVO.userId} AND A.BTF_INQRY_ANSWER_CN IS NOT NULL
+			</when>
+		</choose>
+		<choose>
+			<when test="keyword != null and keyword!='' and selectColumn != 'ALL'">
+				AND ${selectColumn} LIKE '%' || #{keyword}  || '%'
+			</when>
+			<when test="keyword != null and keyword != '' and 'ALL'.equals(selectColumn)">
+				AND (
+					A.BTF_INQRY_SJ LIKE '%' || #{keyword}  || '%'
+					OR A.USER_NCNM LIKE '%' || #{keyword}  || '%'
+					)
+			</when>
+		</choose>
+		) B
+		)
+		SELECT T.* 
+    	FROM T
+    	WHERE T.NUM BETWEEN (#{currentPage}*10) - (10 - 1) AND (#{currentPage}*10)
+	</select>
+	
+	<select id="btfInqryDetail" parameterType="vSrvcBtfInqryVO" resultMap="vSrvcBtfInqryMap">
+		SELECT A.BTF_INQRY_NO, A.BTF_INQRY_SJ, A.BTF_INQRY_CN, A.BTF_INQRY_WR_DT, 
+			   A.BTF_INQRY_ANSWER_CN, A.BTF_INQRY_ANSWER_WR_DT, A.USER_ID, A.USER_NCNM, A.EMPLYR_TY,
+		       A.SPRVISE_ATCHMNFL_NO, B.ATCHMNFL_NO, B.ATCHMNFL_COURS
+		FROM V_SRVC_BTF_INQRY A
+		LEFT JOIN SPRVISE_ATCHMNFL B
+		ON A.SPRVISE_ATCHMNFL_NO = B.SPRVISE_ATCHMNFL_NO
+		WHERE A.BTF_INQRY_NO = #{btfInqryNo} AND A.USER_ID=#{userId}
+	</select>
+	
+	<resultMap type="vSrvcBtfInqryVO" id="vSrvcBtfInqryMap">
+		<result property="btfInqryNo" column="BTF_INQRY_NO"/>
+		<result property="btfInqrySj" column="BTF_INQRY_SJ"/>
+		<result property="btfInqryCn" column="BTF_INQRY_CN"/>
+		<result property="btfInqryWrDt" column="BTF_INQRY_WR_DT"/>
+		<result property="mberId" column="MBER_ID"/>
+		<result property="proId" column="PRO_ID"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="btfInqryAnswerCn" column="BTF_INQRY_ANSWER_CN"/>
+		<result property="btfInqryAnswerWrDt" column="BTF_INQRY_ANSWER_WR_DT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="userNcnm" column="USER_NCNM"/>
+		<result property="emplyrTy" column="EMPLYR_TY"/>
+		<collection property="sprviseAtchmnflVOList" resultMap="sprviseAtchMap"></collection>
+	</resultMap>
+	
+	<resultMap type="sprviseAtchmnflVO" id="sprviseAtchMap">
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="atchmnflNo" column="ATCHMNFL_NO"/>
+		<result property="atchmnflCours" column="ATCHMNFL_COURS"/>
+		<result property="atchmnflNm" column="ATCHMNFL_NM"/>
+		<result property="storeAtchmnflNm" column="STORE_ATCHMNFL_NM"/>
+		<result property="atchmnflTy" column="ATCHMNFL_TY"/>
+		<result property="registDt" column="REGIST_DT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="updtDt" column="UPDT_DT"/>
+	</resultMap>
+	
+	<update id="updateAnswer" parameterType="map">
+		UPDATE SRVC_BTF_INQRY 
+		SET BTF_INQRY_ANSWER_CN = #{btfInqryAnswerCn}, BTF_INQRY_ANSWER_WR_DT=SYSDATE
+		WHERE BTF_INQRY_NO=#{btfInqryNo} AND PRO_ID=#{proId}
+	</update>
+	
+	<insert id="btfInqryCreatePost" parameterType="map">
+		INSERT INTO SRVC_BTF_INQRY(BTF_INQRY_NO, MBER_ID, BTF_INQRY_SJ, BTF_INQRY_CN,BTF_INQRY_WR_DT, SPRVISE_ATCHMNFL_NO, PRO_ID)
+    	VALUES(BTF_INQRY_NO_SEQ.NEXTVAL,#{mberId}, #{btfInqrySj}, #{btfInqryCn},SYSDATE, SPRVISE_ATCHMNFL_NO_SEQ.NEXTVAL, #{proId})
+	</insert>
+	
+	<update id="btfInqryUpdatePost" parameterType="srvcBtfInqryVO">
+		UPDATE SRVC_BTF_INQRY SET BTF_INQRY_SJ = #{btfInqrySj}, BTF_INQRY_CN = #{btfInqryCn} WHERE BTF_INQRY_NO = #{btfInqryNo}
+	</update>
+</mapper>

@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro.proSearch.mapper.SearchProMapper">
+
+   <resultMap type="proVO" id="proMap">
+      <result property="proId" column="PRO_ID"/>
+      <result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+      <result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+      <collection property="proflVOList" ofType="proVO" resultMap="proflVOMap"></collection>
+      <collection property="userSeVOList" resultMap="userSeVOMap"></collection>
+      <collection property="vCityVOList" resultMap="vCityVOMap"></collection>
+      <collection property="spcltyRealmVOList" resultMap="spcltyRealmVOMap"></collection>
+   </resultMap>
+   
+   <resultMap type="proProflVO" id="proflVOMap">
+      <result property="proProflOnLiIntrcn" column="PRO_PROFL_ON_LI_INTRCN"/>
+      <result property="proProflContactPosblTime" column="PRO_PROFL_CONTACT_POSBL_TIME"/>
+      <result property="bcityCode" column="BCITY_CODE"/>
+      <result property="brtcCode" column="BRTC_CODE"/>
+   </resultMap>
+   
+   <resultMap type="UsersVO" id="userSeVOMap">
+      <result property="userId" column="USER_ID"/>
+      <result property="userNcnm" column="USER_NCNM"/>
+   </resultMap>
+   
+   <resultMap type="VCityVO" id="vCityVOMap">
+      <result property="bcityNm" column="BCITY_NM"/>
+      <result property="brtcNm" column="BRTC_NM"/>
+   </resultMap>
+   
+   <resultMap type="SpcltyRealmVO" id="spcltyRealmVOMap">
+      <result property="spcltyRealmNm" column="SPCLTY_REALM_NM"/>
+   </resultMap>
+   
+   
+   <select id="proList" parameterType="String" resultMap="proMap">
+       SELECT A.PRO_ID, 
+         A.PRO_PROFL_PHOTO, 
+         A.SPCLTY_REALM_CODE,
+         B.PRO_PROFL_ON_LI_INTRCN, 
+         B.PRO_PROFL_CONTACT_POSBL_TIME, 
+         B.BCITY_CODE, 
+         B.BRTC_CODE,
+         C.USER_NCNM,
+         D.BCITY_NM,
+         D.BRTC_NM,
+         E.SPCLTY_REALM_NM
+      FROM PRO A
+      INNER JOIN PRO_PROFL B ON A.PRO_ID = B.PRO_ID
+      INNER JOIN SPCLTY_REALM E ON A.SPCLTY_REALM_CODE = E.SPCLTY_REALM_CODE
+      INNER JOIN USERS C ON B.PRO_ID = C.USER_ID
+      INNER JOIN V_CITY D ON B.BRTC_CODE = D.BRTC_CODE
+   </select>
+
+	<!-- map : {keyword=태권도, selectColumn=ALL, currentPage=1, size=5} -->
+   <select id="proListPage" parameterType="hashMap" resultMap="proMap">
+       WITH T AS (
+             SELECT A.PRO_ID, 
+                A.PRO_PROFL_PHOTO, 
+                A.SPCLTY_REALM_CODE,
+                B.PRO_PROFL_ON_LI_INTRCN, 
+                B.PRO_PROFL_CONTACT_POSBL_TIME, 
+                B.BCITY_CODE, 
+                B.BRTC_CODE,
+                C.USER_NCNM,
+                D.BCITY_NM,
+                D.BRTC_NM,
+                E.SPCLTY_REALM_NM,
+                E.PTPRT_SPCLTY_REALM_CODE,
+                ROW_NUMBER() OVER(ORDER BY A.PRO_ID ASC) RNUM
+      FROM PRO A
+      INNER JOIN PRO_PROFL B ON A.PRO_ID = B.PRO_ID
+      INNER JOIN SPCLTY_REALM E ON A.SPCLTY_REALM_CODE = E.SPCLTY_REALM_CODE
+      INNER JOIN USERS C ON B.PRO_ID = C.USER_ID
+      INNER JOIN V_CITY D ON B.BRTC_CODE = D.BRTC_CODE
+      WHERE  1 = 1
+        <choose>
+	         <when test="keyword != null and keyword != '' and selectColumn =='ALL'">
+	             AND (
+	               A.PRO_ID LIKE '%' || #{keyword} || '%'
+	               OR B.PRO_PROFL_ON_LI_INTRCN LIKE '%' || #{keyword} || '%'
+	               OR B.PRO_PROFL_CONTACT_POSBL_TIME LIKE '%' || #{keyword} || '%'
+	               OR C.USER_NCNM LIKE '%' || #{keyword} || '%'
+	               OR D.BCITY_NM LIKE '%' || #{keyword} || '%'
+	               OR D.BRTC_NM LIKE '%' || #{keyword} || '%'
+	               OR D.BCITY_NM || D.BRTC_NM LIKE '%' || #{keyword} || '%'
+	               OR E.SPCLTY_REALM_NM  LIKE '%' || #{keyword} || '%'
+	             )
+	         </when>
+	         <when test="keyword != null and keyword != '' and selectColumn =='SPCLTY_REALM_CODE'">
+	             AND (
+	               A.SPCLTY_REALM_CODE  LIKE '%' || #{keyword} || '%'
+	             )
+	         </when>
+	         <when test="keyword != null and keyword != '' and (selectColumn == 'BCITY_NM')">
+	             AND (
+	               D.BCITY_NM || D.BRTC_NM LIKE '%' || #{keyword} || '%'
+	             )
+	         </when>
+        </choose>
+        
+       )
+       SELECT * FROM T
+       WHERE T.RNUM BETWEEN (#{currentPage} * #{size}) - (#{size} - 1) AND (#{currentPage} * #{size})
+   </select>
+
+   
+   
+      <select id="getTotal" parameterType="hashMap" resultType="int">
+      WITH T AS (
+       SELECT A.PRO_ID, 
+                A.PRO_PROFL_PHOTO, 
+                A.SPCLTY_REALM_CODE,
+                B.PRO_PROFL_ON_LI_INTRCN, 
+                B.PRO_PROFL_CONTACT_POSBL_TIME, 
+                B.BCITY_CODE, 
+                B.BRTC_CODE,
+                C.USER_NCNM,
+                D.BCITY_NM,
+                D.BRTC_NM,
+                E.SPCLTY_REALM_NM,
+                E.PTPRT_SPCLTY_REALM_CODE,
+                ROW_NUMBER() OVER(ORDER BY A.PRO_ID ASC) RNUM
+      FROM PRO A
+      INNER JOIN PRO_PROFL B ON A.PRO_ID = B.PRO_ID
+      INNER JOIN SPCLTY_REALM E ON A.SPCLTY_REALM_CODE = E.SPCLTY_REALM_CODE
+      INNER JOIN USERS C ON B.PRO_ID = C.USER_ID
+      INNER JOIN V_CITY D ON B.BRTC_CODE = D.BRTC_CODE
+        WHERE  1 = 1
+        <choose>
+	         <when test="keyword != null and keyword != '' and selectColumn =='ALL'">
+	             AND (
+	               A.PRO_ID LIKE '%' || #{keyword} || '%'
+	               OR B.PRO_PROFL_ON_LI_INTRCN LIKE '%' || #{keyword} || '%'
+	               OR B.PRO_PROFL_CONTACT_POSBL_TIME LIKE '%' || #{keyword} || '%'
+	               OR C.USER_NCNM LIKE '%' || #{keyword} || '%'
+	               OR D.BCITY_NM LIKE '%' || #{keyword} || '%'
+	               OR D.BRTC_NM LIKE '%' || #{keyword} || '%'
+	               OR D.BCITY_NM || D.BRTC_NM LIKE '%' || #{keyword} || '%'
+	               OR E.SPCLTY_REALM_NM  LIKE '%' || #{keyword} || '%'
+	             )
+	         </when>
+	         <when test="keyword != null and keyword != '' and selectColumn =='SPCLTY_REALM_CODE'">
+	             AND (
+	               A.SPCLTY_REALM_CODE  LIKE '%' || #{keyword} || '%'
+	             )
+	         </when>
+	         <when test="keyword != null and keyword != '' and (selectColumn == 'BCITY_NM')">
+	             AND (
+	               D.BCITY_NM || D.BRTC_NM LIKE '%' || #{keyword} || '%'
+	             )
+	         </when>
+        </choose>
+        
+      )
+      select count(*) from T
+      where 1 = 1
+      
+   </select>
+   
+   
+   <resultMap type="spcltyRealmVO" id="spcltyRealmMap">
+   	  <result property="lev" column="lev"/>
+      <result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+      <result property="spcltyRealmNm" column="SPCLTY_REALM_NM"/>
+      <result property="ptprtSpcltyRealmCode" column="PTPRT_SPCLTY_REALM_CODE"/>
+   </resultMap>
+   <!-- 서비스 카테고리 -->
+   <select id="spcltyB" resultMap="spcltyRealmMap">
+		SELECT 
+		    LEVEL AS lev,
+		    SPCLTY_REALM_CODE,
+		    SPCLTY_REALM_NM,
+		    PTPRT_SPCLTY_REALM_CODE
+		FROM 
+		    SPCLTY_REALM
+		START WITH 
+		    PTPRT_SPCLTY_REALM_CODE IS NULL
+		CONNECT BY 
+		    PRIOR SPCLTY_REALM_CODE = PTPRT_SPCLTY_REALM_CODE
+		ORDER BY 
+		    SPCLTY_REALM_CODE
+   </select>
+   
+	<!-- 서비스 하위분류 -->
+	<resultMap type="spcltyRealmVO" id="spcltySecMap">
+		<result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+		<result property="spcltyRealmNm" column="SPCLTY_REALM_NM"/>
+		<result property="ptprtSpcltyRealmCode" column="PTPRT_SPCLTY_REALM_CODE"/>
+	</resultMap>
+	<select id="spcltySec" parameterType="String" resultMap="spcltySecMap">
+		SELECT SPCLTY_REALM_CODE, SPCLTY_REALM_NM, PTPRT_SPCLTY_REALM_CODE
+		FROM SPCLTY_REALM
+		WHERE PTPRT_SPCLTY_REALM_CODE = #{code}
+	</select>
+	
+	<!--서비스 코드->이름  -->
+	<select id="spcltyNm" parameterType="String" resultType="String">
+		SELECT SPCLTY_REALM_NM
+		FROM SPCLTY_REALM
+		WHERE SPCLTY_REALM_CODE = #{code}
+	</select>
+   
+   
+      <resultMap type="proVO" id="ProMap">
+      <result property="proId" column="PRO_ID"/>
+      <result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+      <result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+      <collection property="adresList" resultMap="AdresMap"></collection>
+      <collection property="userSeVOList" resultMap="UserNmMap"></collection>
+   </resultMap>
+   
+   <resultMap type="adresVO" id="AdresMap">
+      <result property="adres" column="ADRES"/>
+   </resultMap>
+   
+   <resultMap type="usersVO" id="UserNmMap">
+      <result property="userNm" column="USER_NM"/>
+   </resultMap>
+   
+   <select id="aroundPro" resultMap="ProMap">
+      SELECT A.PRO_ID,
+        A.PRO_PROFL_PHOTO,
+        A.SPCLTY_REALM_CODE,
+        B.ADRES, 
+        C.USER_NM,
+		D.PRO_PROFL_ON_LI_INTRCN
+      FROM PRO A,ADRES B,USERS C,PRO_PROFL D
+      WHERE A.PRO_ID = B.USER_ID
+       AND A.PRO_ID = C.USER_ID
+       AND A.PRO_ID = D.PRO_ID
+   </select>
+   
+<resultMap type="proVO" id="MonthProMap">
+    <result property="proId" column="PRO_ID"/>
+    <result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+    <result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+    <collection property="userSeVOList" resultMap="UserNmMap2"></collection>
+    <collection property="proflVOList" resultMap="proflMap"></collection>
+</resultMap>
+
+<resultMap type="proProflVO" id="proflMap">
+    <result property="proProflOnLiIntrcn" column="PRO_PROFL_ON_LI_INTRCN"/>
+</resultMap>
+
+<resultMap type="usersVO" id="UserNmMap2">
+    <result property="userNm" column="USER_NCNM"/>
+</resultMap>
+
+<select id="getMonthPro" resultMap="MonthProMap">
+	SELECT A.PRO_ID, 
+	                A.PRO_PROFL_PHOTO, 
+	                A.SPCLTY_REALM_CODE,
+	                B.PRO_PROFL_ON_LI_INTRCN, 
+	                C.USER_NCNM
+	FROM PRO A
+	INNER JOIN PRO_PROFL B ON A.PRO_ID = B.PRO_ID
+	INNER JOIN USERS C ON B.PRO_ID = C.USER_ID
+	WHERE A.PRO_ID IN (
+	SELECT PRO_ID FROM
+	(SELECT PRO_ID, PRO_BKMK_count
+	FROM
+	(
+	    SELECT PRO_ID, PRO_BKMK_count
+	    FROM (
+	        SELECT PRO_ID, COUNT(*) AS PRO_BKMK_count
+	        FROM PRO_BKMK
+	        GROUP BY PRO_ID
+	        ORDER BY COUNT(*) DESC
+	    ) WHERE ROWNUM BETWEEN 1 AND 3
+	ORDER BY DBMS_RANDOM.VALUE)
+	WHERE ROWNUM BETWEEN 1 AND 1)
+	)
+
+</select>
+   
+   
+</mapper>

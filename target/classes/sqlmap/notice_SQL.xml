@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.admin.notice.mapper.NoticeMapper">	
+<!-- 	<sql id = "where"> -->
+<!-- 		<if test="keyword!=null and keyword!=''"> -->
+<!-- 			And (  -->
+<!-- 				notice_Cn Like '%' || #{keyword} || '%' -->
+				
+<!-- 			or	notice_Sj Like '%' || #{keyword} || '%' -->
+<!-- 			) -->
+<!-- 		</if> -->
+<!-- 	</sql> -->
+	<sql id = "where">
+		<if test="keyword!=null and keyword!=''">
+			And (
+			<if test="searchKey == 'detail'">
+				notice_Cn Like '%' || #{keyword} || '%'
+			</if>
+			<if test="searchKey == 'title'">
+				notice_Sj Like '%' || #{keyword} || '%'
+			</if>			
+			)
+		</if>
+	</sql>
+	
+<!-- 	 <select id="list" parameterType="hashMap" resultType="noticeVO"> -->
+<!-- 		with t as( -->
+<!-- 			select ROW_NUMBER() OVER(order by f.notice_no DESC)RNUM -->
+<!-- 				,f.* -->
+<!-- 			from( -->
+<!-- 				select notice_No, notice_Sj, notice_Cn,		 -->
+<!-- 					notice_Writng_Dt, NOTICE_RDCNT, MNGR_ID  -->
+<!-- 				from notice -->
+<!-- 				where 1 = 1 -->
+<!-- 				<include refid="where"></include> -->
+<!-- 			)f -->
+<!-- 		) -->
+<!-- 		select t.* from t -->
+<!-- 		where t.rnum between(#{currentPage}*10)-(10-1) and (#{currentPage}*10) -->
+<!-- 	</select>   -->
+
+	<select id="list" parameterType="hashMap" resultType="noticeVO">
+	   
+		WITH TOTAL_COUNT AS (
+			    SELECT COUNT(*) AS TOTAL_COUNT FROM NOTICE
+		),
+		T AS (
+		    SELECT 
+		        ROW_NUMBER() OVER(ORDER BY NOTICE_NO ASC) AS RNUM,
+		        NOTICE_NO,
+		        NOTICE_SJ,
+		        NOTICE_CN,
+		        NOTICE_WRITNG_DT,
+		        NOTICE_RDCNT,
+		        MNGR_ID 
+		    FROM 
+		         NOTICE
+		        WHERE 1 = 1
+		<if test="keyword!=null and keyword!=''">
+			AND (
+				NOTICE_SJ LIKE '%' || #{keyword} || '%'
+			 OR NOTICE_CN LIKE '%' || #{keyword} || '%'
+			)
+		</if>
+		)
+		SELECT 
+		    T.*, 
+		    CEIL((SELECT TOTAL_COUNT FROM TOTAL_COUNT) / 10.0) AS TOTAL_PAGES,
+		    (SELECT TOTAL_COUNT FROM TOTAL_COUNT) AS TOTAL_COUNT 
+		FROM 
+		    T
+		WHERE 
+		    T.RNUM BETWEEN ((SELECT TOTAL_COUNT FROM TOTAL_COUNT) - 10 * #{currentPage} + 1) AND (SELECT TOTAL_COUNT FROM TOTAL_COUNT) - 10 * (#{currentPage} - 1)
+		ORDER BY 
+		    T.RNUM DESC
+
+	</select>
+	
+	<select id="getAllNoticeList" parameterType="noticeVO" resultType="noticeVO" >
+		select * from notice
+	</select>
+
+	<!-- NOTICE 하나의 공지사항 글에 -->
+	<resultMap type="noticeVO" id="noticeMap">
+		<result property="noticeNo" column="NOTICE_NO"/>
+		<result property="noticeSj" column="NOTICE_SJ"/>
+		<result property="noticeCn" column="NOTICE_CN"/>
+		<result property="noticeWritngDt" column="NOTICE_WRITNG_DT"/>
+		<result property="noticeRdcnt" column="NOTICE_RDCNT"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="mngrId" column="MNGR_ID"/>
+		<collection property="spAtVOList" resultMap="spAtMap"></collection>
+	</resultMap>
+	
+	<!-- SPRVISE_ATCHMNFL 여러개의 첨부파일이 있음 -->
+	<resultMap type="sprviseAtchmnflVO" id="spAtMap">
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="atchmnflNo" column="ATCHMNFL_NO"/>
+		<result property="atchmnflCours" column="ATCHMNFL_COURS"/>
+		<result property="atchmnflNm" column="ATCHMNFL_NM"/>
+		<result property="storeAtchmnflNm" column="STORE_ATCHMNFL_NM"/>
+		<result property="atchmnflTy" column="ATCHMNFL_TY"/>
+		<result property="registDt" column="REGIST_DT"/>
+		<result property="userId" column="USER_ID"/>
+		<result property="updtDt" column="UPDT_DT"/>
+	</resultMap>
+
+	 <select id="sprviseAtchmnflVO" parameterType="int" resultMap="noticeMap" >
+		SELECT A.NOTICE_NO, A.NOTICE_SJ, A.NOTICE_CN, A.NOTICE_WRITNG_DT, A.NOTICE_RDCNT
+		     , A.SPRVISE_ATCHMNFL_NO, A.MNGR_ID
+		     , B.ATCHMNFL_NO, B.ATCHMNFL_COURS, B.ATCHMNFL_NM, B.STORE_ATCHMNFL_NM
+		     , B.ATCHMNFL_TY, B.REGIST_DT, B.USER_ID, B.UPDT_DT
+		FROM   NOTICE A LEFT OUTER JOIN SPRVISE_ATCHMNFL B ON(A.SPRVISE_ATCHMNFL_NO = B.SPRVISE_ATCHMNFL_NO)
+		WHERE  A.NOTICE_NO = #{noticeNo}
+	</select>
+	
+	
+	<select id="detail" parameterType="int" resultType="noticeVO">
+    select NOTICE_NO, NOTICE_SJ, NOTICE_CN, notice_writng_dt, NOTICE_RDCNT, SPRVISE_ATCHMNFL_NO, MNGR_ID
+    from notice
+    where NOTICE_NO = #{noticeNo}
+	</select>
+	
+	
+	<update id="increaseViewCount" parameterType="int">
+    update notice
+    set NOTICE_RDCNT = NOTICE_RDCNT + 1
+    where NOTICE_NO = #{noticeNo}
+	</update>
+	
+	
+	<update id="update" parameterType="noticeVO">
+	update notice 
+	set NOTICE_CN = #{noticeCn},
+		NOTICE_SJ = #{noticeSj}	 
+	where notice_no = #{noticeNo} 
+	</update>
+	
+	
+	<delete id = "delete" parameterType="noticeVO">
+		delete from notice
+		where notice_no = #{noticeNo}
+	</delete>
+		
+		
+	<insert id="createPost" parameterType="noticeVO">
+	
+		<selectKey resultType="int" order="BEFORE" keyProperty="sprviseAtchmnflNo">
+			SELECT SPRVISE_ATCHMNFL_NO_SEQ.NEXTVAL FROM DUAL
+		</selectKey>
+		
+			insert into notice(notice_No, notice_Sj,notice_Cn,NOTICE_WRITNG_DT,MNGR_ID,SPRVISE_ATCHMNFL_NO)
+			values(NOTICE_NO_SEQ.nextval,#{noticeSj},#{noticeCn},SYSDATE,#{mngrId},#{sprviseAtchmnflNo})
+		</insert>
+		
+	<insert id="insertSprvise" parameterType="sprviseAtchmnflVO">
+		INSERT INTO SPRVISE_ATCHMNFL(SPRVISE_ATCHMNFL_NO, ATCHMNFL_NO, ATCHMNFL_COURS, ATCHMNFL_NM, STORE_ATCHMNFL_NM, ATCHMNFL_TY, REGIST_DT, USER_ID, UPDT_DT) 
+		VALUES(#{sprviseAtchmnflNo},#{atchmnflNo},#{atchmnflCours},#{atchmnflNm},#{storeAtchmnflNm},#{atchmnflTy},SYSDATE,#{userId},NULL)
+	</insert>
+		
+		
+	<select id = "getTotal" parameterType="hashMap" resultType="int">
+		select count(*) from notice
+		where 1 = 1
+		<include refid="where"></include>
+	</select>
+	
+</mapper>

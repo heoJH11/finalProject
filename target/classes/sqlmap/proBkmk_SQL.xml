@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.pro.proBkmk.mapper.ProBkmkMapper">
+
+	<insert id="proBkmkCreate" parameterType="String">
+		INSERT INTO PRO_BKMK(PRO_BKMK_NO, PRO_ID, MBER_ID)
+		VALUES (PRO_BKMK_NO_SEQ.NEXTVAL,#{proId},#{mberId})
+	</insert>
+	
+	<select id="proBkmkCheck" resultType="String">
+	SELECT PRO_BKMK_NO FROM PRO_BKMK WHERE PRO_ID=#{proId} AND MBER_ID=#{mberId}
+	</select>
+	
+	<delete id="proBkmkDelete">
+	DELETE FROM PRO_BKMK WHERE PRO_ID =#{proId} AND MBER_ID=#{mberId}
+	</delete>
+	
+	<resultMap type="proBkmkVO" id="proBkmkMap">
+		<result property="proBkmkNo" column="PRO_BKMK_NO"/>
+		<result property="proId" column="PRO_ID"/>
+		<result property="mberId" column="MBER_ID"/>
+		<collection property="BkmkVOList" ofType="proVO" resultMap="BkmkVOMap"></collection>
+		<collection property="userBkVOList" resultMap="userBkVOMap"></collection>
+	</resultMap>
+	
+	<resultMap type="proVO" id="BkmkVOMap">
+		<result property="proMbtlnum" column="PRO_MBTLNUM"/>
+		<result property="sexdstnTy" column="SEXDSTN_TY"/>
+		<result property="email" column="EMAIL"/>
+		<result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+		<result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+	</resultMap>
+	
+	<resultMap type="UsersVO" id="userBkVOMap">
+		<result property="userId" column="USER_ID"/>
+		<result property="userNcnm" column="USER_NCNM"/>
+	</resultMap>
+	
+	<select id="getFavInfo" parameterType="String" resultMap="proBkmkMap">
+	SELECT A.PRO_BKMK_NO,
+	       A.PRO_ID,
+	       A.MBER_ID,
+	       B.PRO_MBTLNUM,
+	       B.SEXDSTN_TY,
+	       B.EMAIL,
+	       B.PRO_PROFL_PHOTO,
+	       B.SPCLTY_REALM_CODE,
+	       C.USER_NCNM
+	FROM PRO_BKMK A
+	INNER JOIN PRO B ON A.PRO_ID = B.PRO_ID
+	INNER JOIN USERS C ON B.PRO_ID = C.USER_ID
+	WHERE A.MBER_ID = #{mberId}
+	</select>
+	
+</mapper>

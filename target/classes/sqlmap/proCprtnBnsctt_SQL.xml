@@ -1,0 +1,195 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="kr.or.ddit.board.pro_collabo.mapper.ProCprtnBbscttMapper">
+	
+	<!-- 댓글 조회 -->
+	<select id="list2" parameterType="int" resultType="kr.or.ddit.board.pro_collabo.vo.ProCprtnBbscttVO">
+		select 
+    	PRO_CPRTN_ANSWER_NO, PRO_CPRTN_BBSCTT_NO, PRO_CPRTN_ANSWER_CN, PRO_CPRTN_ANSWER_WR_DT, PRO_ID
+		from PRO_CPRTN_ANSWER
+    	where PRO_CPRTN_BBSCTT_NO = #{proCprtnBbscttNo}
+	</select>
+	
+	<!-- 댓글 작성 -->
+	<insert id="writer" parameterType="kr.or.ddit.board.pro_collabo.vo.ProCprtnBbscttVO">
+		INSERT INTO PRO_CPRTN_ANSWER(PRO_CPRTN_ANSWER_NO, PRO_CPRTN_BBSCTT_NO, PRO_CPRTN_ANSWER_CN, PRO_CPRTN_ANSWER_WR_DT, PRO_ID)
+		VALUES(#{proCprtnAnswerNo},#{proCprtnBbscttNo},#{proCprtnAnswerCn},#{proCprtnAnswerWrDt},#{proId})
+	</insert>
+	
+	<!-- 댓글 수정 -->
+	<update id="modify" parameterType="kr.or.ddit.board.pro_collabo.vo.ProCprtnBbscttVO">
+		update PRO_CPRTN_ANSWER set
+    	PRO_CPRTN_ANSWER_CN = #{proCprtnAnswerCn}
+		where PRO_CPRTN_ANSWER_NO = #{proCprtnAnswerNo}
+    	and PRO_CPRTN_BBSCTT_NO = #{proCprtnBbscttNo}
+	
+	</update>
+	
+	<!-- 댓글 삭제 -->
+	<delete id="delete" parameterType="kr.or.ddit.board.pro_collabo.vo.ProCprtnBbscttVO">
+		delete from PRO_CPRTN_ANSWER
+		where PRO_CPRTN_ANSWER_NO = #{proCprtnAnswerNo}
+		and	PRO_CPRTN_BBSCTT_NO = #{proCprtnBbscttNo}
+		
+	</delete>
+	
+	
+	<sql id = "where">
+		<if test="keyword!=null and keyword!=''">
+			And ( 
+				PRO_CPRTN_BBSCTT_SJ Like '%' || #{keyword} || '%'
+			
+<!-- 			or	PRO_CPRTN_BBSCTT_CN Like '%' || #{keyword} || '%' -->
+			)
+		</if>
+	</sql>
+
+	<select id = "getTotal" parameterType="hashMap" resultType="int">
+		select count(*) from PRO_CPRTN_BBSCTT
+		where 1 = 1
+		<include refid="where"></include>
+	</select>
+	
+<!-- 	<select id="list" parameterType="hashMap" resultType="proCprtnBbscttVO"> -->
+<!-- 	    with t as ( -->
+<!-- 	        select ROW_NUMBER() OVER(order by f.PRO_CPRTN_BBSCTT_NO DESC)RNUM, -->
+<!-- 	            f.PRO_CPRTN_BBSCTT_NO, -->
+<!-- 	            f.PRO_CPRTN_BBSCTT_SJ, -->
+<!-- 	            f.PRO_CPRTN_BBSCTT_CN, -->
+<!-- 	            f.PRO_CPRTN_BBSCTT_WR_DT, -->
+<!-- 	            f.PRO_CPRTN_BBSCTT_RDCNT, -->
+<!-- 	            f.PRO_ID  -->
+<!-- 	             , B.USER_NCNM -->
+<!-- 	    		 , C.PRO_PROFL_PHOTO -->
+<!-- 	        from ( -->
+<!-- 	            select PRO_CPRTN_BBSCTT_NO, PRO_CPRTN_BBSCTT_SJ, PRO_CPRTN_BBSCTT_CN, PRO_CPRTN_BBSCTT_WR_DT, PRO_CPRTN_BBSCTT_RDCNT, PRO_ID  -->
+<!-- 	            from PRO_CPRTN_BBSCTT  -->
+<!-- 	            where 1 = 1 -->
+<!-- 	            <include refid="where"></include> -->
+<!-- 	        ) f, USERS B, PRO C -->
+<!-- 	         where f.PRO_ID = B.USER_ID -->
+<!-- 	    	AND B.USER_ID = C.PRO_ID -->
+<!-- 	    ) -->
+<!-- 	    select t.* from t -->
+<!-- 	    where t.rnum between (#{currentPage}*10)-(10-1) and (#{currentPage}*10) -->
+<!-- 	</select> -->
+
+	<select id="list" parameterType="hashMap" resultType="proCprtnBbscttVO">
+	/* kr.or.ddit.board.pro_collabo.mapper.ProCprtnBbscttMapper list 페이징 수정 */
+	    WITH TOTAL_COUNT AS
+			 (
+		    	 SELECT COUNT(*) AS TOTAL_COUNT FROM PRO_CPRTN_BBSCTT
+			 ),
+			    T AS (
+				        SELECT 
+				                 ROW_NUMBER() OVER(ORDER BY F.PRO_CPRTN_BBSCTT_NO ASC) AS RNUM
+				               , F.PRO_CPRTN_BBSCTT_NO
+				               , F.PRO_CPRTN_BBSCTT_SJ
+				               , F.PRO_CPRTN_BBSCTT_CN
+				               , F.PRO_CPRTN_BBSCTT_WR_DT
+				               , F.PRO_CPRTN_BBSCTT_RDCNT
+				               , F.PRO_ID 
+				               , B.USER_NCNM
+				               , C.PRO_PROFL_PHOTO
+				          FROM 
+					            PRO_CPRTN_BBSCTT F
+					            JOIN USERS B ON F.PRO_ID = B.USER_ID
+					            JOIN PRO C ON B.USER_ID = C.PRO_ID
+					     WHERE 1 = 1
+				    )
+				    SELECT 
+				    		  T.*
+				    		, CEIL((SELECT TOTAL_COUNT FROM TOTAL_COUNT) / 10.0) AS TOTAL_PAGES
+				    		, (SELECT TOTAL_COUNT FROM TOTAL_COUNT) AS TOTAL_COUNT 
+				      FROM 
+				              T
+				     WHERE 1 = 1
+				       AND T.RNUM BETWEEN ((SELECT TOTAL_COUNT FROM TOTAL_COUNT) - 10 * #{currentPage} + 1)
+				       AND (SELECT TOTAL_COUNT FROM TOTAL_COUNT) - 10 * (#{currentPage} - 1)
+				  ORDER BY T.PRO_CPRTN_BBSCTT_WR_DT DESC, T.RNUM DESC
+		
+	</select>
+
+	
+	<update id="increaseViewCount" parameterType="int">
+    update PRO_CPRTN_BBSCTT
+    set PRO_CPRTN_BBSCTT_RDCNT = PRO_CPRTN_BBSCTT_RDCNT + 1
+    where PRO_CPRTN_BBSCTT_NO = #{proCprtnBbscttNo}
+	</update>
+	
+	<resultMap type="proCprtnBbscttVO" id="proCprtnBbscttMap">
+		<result property="proCprtnBbscttNo" column="PRO_CPRTN_BBSCTT_NO"/>
+		<result property="proCprtnBbscttSj" column="PRO_CPRTN_BBSCTT_SJ"/>
+		<result property="proCprtnBbscttCn" column="PRO_CPRTN_BBSCTT_CN"/>
+		<result property="proCprtnBbscttWrDt" column="PRO_CPRTN_BBSCTT_WR_DT"/>
+		<result property="proCprtnBbscttRdcnt" column="PRO_CPRTN_BBSCTT_RDCNT"/>
+		<result property="sprviseAtchmnflNo" column="SPRVISE_ATCHMNFL_NO"/>
+		<result property="proId" column="PRO_ID"/>
+		<collection property="proList" resultMap="proMap"></collection>
+		<collection property="proProflList" resultMap="proProflMap"></collection>
+	</resultMap>
+	
+	<resultMap type="kr.or.ddit.vo.ProVO" id="proMap">
+		<result property="proId" column="PRO_ID"/>
+		<result property="proMbtlnum" column="PRO_MBTLNUM"/>
+		<result property="sexdstnTy" column="SEXDSTN_TY"/>
+		<result property="email" column="EMAIL"/>
+		<result property="proProflPhoto" column="PRO_PROFL_PHOTO"/>
+		<result property="spcltyRealmCode" column="SPCLTY_REALM_CODE"/>
+	</resultMap>
+	
+	<resultMap type="kr.or.ddit.vo.ProProflVO" id="proProflMap">	
+		<result property="proId" column="PRO_ID"/>
+		<result property="proProflOnLiIntrcn" column="PRO_PROFL_ON_LI_INTRCN"/>
+		<result property="proProflContactPosblTime" column="PRO_PROFL_CONTACT_POSBL_TIME"/>
+		<result property="proProflReqForm" column="PRO_PROFL_REQ_FORM"/>
+		<result property="proProflHist" column="PRO_PROFL_HIST"/>
+		<result property="bcityCode" column="BCITY_CODE"/>
+		<result property="brtcCode" column="BRTC_CODE"/>
+	</resultMap>
+	
+
+ 	<select id="detail2" parameterType="int" resultMap="proCprtnBbscttMap">
+    SELECT     
+    A.PRO_CPRTN_BBSCTT_NO, 
+    A.PRO_CPRTN_BBSCTT_SJ, 
+    A.PRO_CPRTN_BBSCTT_CN, 
+<!--     A.PRO_CPRTN_BBSCTT_WR_DT,  -->
+    A.PRO_CPRTN_BBSCTT_RDCNT, 
+    A.SPRVISE_ATCHMNFL_NO, 
+    A.PRO_ID,  
+    B.PRO_MBTLNUM, 
+    B.SEXDSTN_TY, 
+    B.EMAIL, 
+    B.PRO_PROFL_PHOTO, 
+    B.SPCLTY_REALM_CODE,
+    C.PRO_PROFL_ON_LI_INTRCN,
+    C.PRO_PROFL_CONTACT_POSBL_TIME,
+    C.PRO_PROFL_REQ_FORM,
+    C.PRO_PROFL_HIST,
+    C.BCITY_CODE,
+    C.BRTC_CODE
+	FROM 
+     PRO_CPRTN_BBSCTT A
+	inner JOIN
+     PRO B ON A.PRO_ID = B.PRO_ID
+	inner JOIN
+     PRO_PROFL C ON A.PRO_ID = C.PRO_ID
+    where PRO_CPRTN_BBSCTT_NO = #{proCprtnBbscttNo}
+	</select> 
+
+
+ 		<select id="detail" parameterType="int" resultType="proCprtnBbscttVO">
+	    SELECT
+	    A.PRO_CPRTN_BBSCTT_NO, A.PRO_CPRTN_BBSCTT_SJ, A.PRO_CPRTN_BBSCTT_CN, A.PRO_CPRTN_BBSCTT_WR_DT, A.PRO_CPRTN_BBSCTT_RDCNT
+	    , A.SPRVISE_ATCHMNFL_NO, A.PRO_ID
+	    , B.USER_NCNM
+	    , C.PRO_PROFL_PHOTO
+	    from PRO_CPRTN_BBSCTT A, USERS B, PRO C
+	    where PRO_CPRTN_BBSCTT_NO = #{proCprtnBbscttNo}
+	    AND A.PRO_ID = B.USER_ID
+	    AND B.USER_ID = C.PRO_ID
+		</select> 
+	
+	
+</mapper>
